@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Detail · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('student')) throw new Error();
+    const content = `
+      <div class="breadcrumb"><a href="courses.html">Courses</a> <i class="fas fa-chevron-right"></i> <span>Detail</span></div>
+      <div class="course-detail-hero" id="courseDetailHero"></div>
+      <div class="course-tabs">
+        <button class="course-tab active" data-tab="overview" onclick="setCourseTab('overview')"><i class="fas fa-info-circle"></i> Overview</button>
+        <button class="course-tab" data-tab="modules" onclick="setCourseTab('modules')"><i class="fas fa-list-ul"></i> Modules</button>
+        <button class="course-tab" data-tab="resources" onclick="setCourseTab('resources')"><i class="fas fa-folder-open"></i> Resources</button>
+      </div>
+      <div id="courseTabContent"></div>
+    `;
+    buildLayout('courses', content);
+    initCourseDetailPage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register · Westfield Institute</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="brand-logo">
+          <i class="fas fa-graduation-cap"></i>
+          <div class="brand-text">Westfield<br><span>Institute of Technology</span></div>
+        </div>
+        <div class="brand-message">
+          <h2>Join our community.</h2>
+          <p>Create your student account and start your academic journey.</p>
+        </div>
+        <div class="brand-features">
+          <div class="brand-feature"><i class="fas fa-user-plus"></i><span>Quick & easy signup</span></div>
+          <div class="brand-feature"><i class="fas fa-book-open"></i><span>Access all courses</span></div>
+          <div class="brand-feature"><i class="fas fa-chart-line"></i><span>Track your progress</span></div>
+        </div>
+      </div>
+      <div class="auth-form-panel">
+        <div class="auth-header">
+          <h1>Create Account</h1>
+          <p id="stepIndicator"><i class="fas fa-user-plus"></i> Step 1 of 2 — Let's get you started</p>
+        </div>
+        <div class="reg-steps">
+          <div class="reg-step active"></div>
+          <div class="reg-step"></div>
+        </div>
+        <form id="registerForm">
+          <div id="step1Fields">
+            <div class="input-row">
+              <div class="input-group"><label>First Name *</label>
+                <div class="input-field"><i class="fas fa-user"></i><input type="text" id="regFirstName" placeholder="Alex" required></div>
+              </div>
+              <div class="input-group"><label>Last Name *</label>
+                <div class="input-field"><i class="fas fa-user"></i><input type="text" id="regLastName" placeholder="Smith" required></div>
+              </div>
+            </div>
+            <div class="input-group"><label>Email *</label>
+              <div class="input-field"><i class="fas fa-envelope"></i><input type="email" id="regEmail" placeholder="you@westfield.edu" required></div>
+            </div>
+            <div class="input-group"><label>Student ID *</label>
+              <div class="input-field"><i class="fas fa-id-card"></i><input type="text" id="regStudentId" placeholder="e.g., STU2025002" required></div>
+            </div>
+          </div>
+          <div id="step2Fields" style="display:none;">
+            <div class="input-row">
+              <div class="input-group"><label>Program *</label>
+                <div class="input-field"><i class="fas fa-graduation-cap"></i>
+                  <select id="regProgram">
+                    <option>B.Tech Computer Science</option>
+                    <option>B.Tech Electronics</option>
+                    <option>B.Tech Mechanical</option>
+                    <option>B.Sc Mathematics</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-group"><label>Year *</label>
+                <div class="input-field"><i class="fas fa-calendar"></i>
+                  <select id="regYear">
+                    <option>1st Year (Semester 1)</option>
+                    <option>2nd Year (Semester 3)</option>
+                    <option>3rd Year (Semester 5)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-group"><label>Phone</label>
+                <div class="input-field"><i class="fas fa-phone"></i><input type="tel" id="regPhone" placeholder="+1 (555) 000-0000"></div>
+              </div>
+              <div class="input-group"><label>Date of Birth</label>
+                <div class="input-field"><i class="fas fa-birthday-cake"></i><input type="date" id="regDob"></div>
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-group"><label>Password *</label>
+                <div class="input-field"><i class="fas fa-lock"></i><input type="password" id="regPassword" placeholder="Min 6 characters" required></div>
+              </div>
+              <div class="input-group"><label>Confirm Password *</label>
+                <div class="input-field"><i class="fas fa-lock"></i><input type="password" id="regConfirmPassword" placeholder="Re-enter" required></div>
+              </div>
+            </div>
+          </div>
+          <div id="step1Buttons">
+            <button type="button" class="auth-btn" onclick="goNextStep()">Continue <i class="fas fa-arrow-right"></i></button>
+          </div>
+          <div id="step2Buttons" style="display:none;">
+            <button type="submit" class="auth-btn" id="registerBtn"><i class="fas fa-user-plus"></i> Create Account</button>
+            <button type="button" class="btn-secondary" style="width:100%;justify-content:center;margin-bottom:1rem;" onclick="goPrevStep()"><i class="fas fa-arrow-left"></i> Back</button>
+          </div>
+          <div class="auth-footer">Already have an account? <a href="index.html">Sign in</a></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>initRegisterPage();</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Dashboard · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('teacher')) throw new Error();
+    const t = DATA.teacher;
+    const content = `
+      <div class="page-header"><h2><i class="fas fa-home"></i> Faculty Dashboard</h2><p>Welcome, ${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}. Here's your teaching overview.</p></div>
+      <div class="stats-grid">
+        ${DATA.teacherStats.map(st => `
+          <a href="${st.route}" class="stat-card">
+            <div class="stat-icon ${st.color}"><i class="fas ${st.icon}"></i></div>
+            <h3>${escapeHtml(st.label)}</h3>
+            <div class="stat-value">${escapeHtml(st.value)}</div>
+            <div class="stat-change"><i class="fas ${st.changeIcon}"></i> ${escapeHtml(st.change)}</div>
+          </a>
+        `).join('')}
+      </div>
+      <div class="dashboard-grid">
+        <div>
+          <div class="dashboard-card">
+            <div class="card-header"><h3><i class="fas fa-chalkboard-teacher"></i> My Courses</h3><a href="teacher-courses.html">View all</a></div>
+            ${t.courses.map(id => {
+              const c = getCourseById(id); if (!c) return '';
+              return `<div class="schedule-item" style="cursor:pointer;" onclick="window.location.href='teacher-courses.html'">
+                <div class="schedule-time">${escapeHtml(c.code)}</div>
+                <div class="schedule-info"><h4>${escapeHtml(c.title)}</h4><p>${c.enrolled} students · ${escapeHtml(c.schedule)}</p></div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="dashboard-card">
+            <div class="card-header"><h3><i class="fas fa-bullhorn"></i> Faculty Announcements</h3></div>
+            ${DATA.teacherAnnouncements.map(a => `
+              <div class="announcement-item"><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.body)}</p><div class="date">${escapeHtml(a.date)}</div></div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    buildLayout('teacher-dashboard', content);
+  </script>
+</body>
+</html>

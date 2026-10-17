@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assignments · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('student')) throw new Error();
+
+    const all = DATA.assignments;
+    const content = `
+      <div class="page-header">
+        <h2><i class="fas fa-tasks"></i> My Assignments</h2>
+        <p>Track, manage, and submit all your assignments in one place.</p>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid assignment-stats">
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-hourglass-half"></i></div>
+          <h3>Pending</h3>
+          <div class="stat-value" id="statPending">0</div>
+          <div class="stat-change"><i class="fas fa-info-circle"></i> Awaiting submission</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fas fa-exclamation-triangle"></i></div>
+          <h3>Overdue</h3>
+          <div class="stat-value" id="statOverdue">0</div>
+          <div class="stat-change" style="color:var(--danger);"><i class="fas fa-clock"></i> Needs attention</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-paper-plane"></i></div>
+          <h3>Submitted</h3>
+          <div class="stat-value" id="statSubmitted">0</div>
+          <div class="stat-change"><i class="fas fa-check-circle"></i> Awaiting grade</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
+          <h3>Graded</h3>
+          <div class="stat-value" id="statGraded">0</div>
+          <div class="stat-change"><i class="fas fa-award"></i> Complete</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-star"></i></div>
+          <h3>Total Points</h3>
+          <div class="stat-value" id="statTotalPoints">0</div>
+          <div class="stat-change"><i class="fas fa-trophy"></i> Across all assignments</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon teal"><i class="fas fa-medal"></i></div>
+          <h3>Earned Points</h3>
+          <div class="stat-value" id="statEarnedPoints">0</div>
+          <div class="stat-change"><i class="fas fa-arrow-up"></i> Great progress!</div>
+        </div>
+      </div>
+
+      <!-- FILTERS BAR -->
+      <div class="filters-bar">
+        <div class="filters-row">
+          <div class="search-input">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search assignments..." oninput="searchAssignments(this.value)">
+          </div>
+          <select class="filter-select" id="courseFilter"></select>
+          <select class="filter-select" onchange="sortAssignments(this.value)">
+            <option value="due-asc">Sort: Due Date (Earliest)</option>
+            <option value="due-desc">Sort: Due Date (Latest)</option>
+            <option value="priority">Sort: Priority</option>
+            <option value="points-desc">Sort: Points (High → Low)</option>
+            <option value="title-asc">Sort: Title (A-Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- STATUS FILTER TABS -->
+      <div class="tab-filters">
+        <button class="tab-filter active" onclick="filterAssignments('all');setActiveTab(this)">
+          <i class="fas fa-list"></i> All <span class="tab-count" data-count-status="all">0</span>
+        </button>
+        <button class="tab-filter" onclick="filterAssignments('pending');setActiveTab(this)">
+          <i class="fas fa-hourglass-half"></i> Pending <span class="tab-count" data-count-status="pending">0</span>
+        </button>
+        <button class="tab-filter" onclick="filterAssignments('submitted');setActiveTab(this)">
+          <i class="fas fa-paper-plane"></i> Submitted <span class="tab-count" data-count-status="submitted">0</span>
+        </button>
+        <button class="tab-filter" onclick="filterAssignments('graded');setActiveTab(this)">
+          <i class="fas fa-check-double"></i> Graded <span class="tab-count" data-count-status="graded">0</span>
+        </button>
+        <button class="tab-filter" onclick="filterAssignments('overdue');setActiveTab(this)">
+          <i class="fas fa-exclamation-triangle"></i> Overdue <span class="tab-count" data-count-status="overdue">0</span>
+        </button>
+      </div>
+
+      <div class="assignments-count-bar">
+        <span id="assignmentsCount" style="font-size:0.82rem;color:var(--text-light);font-weight:600;"></span>
+      </div>
+
+      <!-- ASSIGNMENTS LIST -->
+      <div class="assignments-list-enhanced" id="assignmentsList"></div>
+    `;
+
+    buildLayout('assignments', content);
+    initAssignmentsPage();
+
+    function setActiveTab(btn) {
+      document.querySelectorAll('.tab-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Faculty Login · Westfield Institute</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="auth-page teacher-theme">
+    <div class="auth-container">
+      <div class="auth-brand teacher-brand">
+        <div class="brand-logo">
+          <i class="fas fa-graduation-cap"></i>
+          <div class="brand-text">Westfield<br><span>Faculty Portal</span></div>
+        </div>
+        <div class="brand-message">
+          <h2>Faculty Portal.</h2>
+          <p>Manage your courses, students, and academic resources.</p>
+        </div>
+        <div class="brand-features">
+          <div class="brand-feature"><i class="fas fa-chalkboard-teacher"></i><span>Manage courses & content</span></div>
+          <div class="brand-feature"><i class="fas fa-users"></i><span>Track student progress</span></div>
+          <div class="brand-feature"><i class="fas fa-clipboard-check"></i><span>Grade assignments</span></div>
+        </div>
+      </div>
+      <div class="auth-form-panel">
+        <div class="auth-header">
+          <h1>Faculty Login</h1>
+          <p><i class="fas fa-shield-alt"></i> Secure access for teaching staff</p>
+        </div>
+        <div class="role-tabs">
+          <a href="index.html" class="role-tab"><i class="fas fa-user-graduate"></i> Student</a>
+          <a href="teacher-login.html" class="role-tab teacher-active"><i class="fas fa-chalkboard-teacher"></i> Teacher</a>
+        </div>
+        <form id="teacherLoginForm">
+          <div class="input-group">
+            <label>Faculty ID or Email</label>
+            <div class="input-field teacher-focus">
+              <i class="fas fa-id-badge"></i>
+              <input type="text" id="teacherId" placeholder="e.g., TCH1001" required>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Password</label>
+            <div class="input-field teacher-focus">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="teacherPassword" placeholder="Enter password" required>
+              <button type="button" class="toggle-password" id="toggleTeacherPassword"><i class="far fa-eye" id="teacherEyeIcon"></i></button>
+            </div>
+          </div>
+          <div class="form-options">
+            <label class="remember-me"><input type="checkbox" checked> Remember me</label>
+            <button type="button" class="forgot-link" onclick="showToast('Reset link sent.', 'info')">Forgot?</button>
+          </div>
+          <button type="submit" class="auth-btn teacher-btn" id="teacherLoginBtn"><i class="fas fa-sign-in-alt"></i> Sign In as Faculty</button>
+          <div class="demo-hint teacher-hint"><i class="fas fa-info-circle"></i> Demo: any ID + password works</div>
+          <div class="auth-footer">New faculty? <a onclick="showToast('Contact HR.', 'info')">Contact HR</a></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>initTeacherLoginPage();</script>
+</body>
+</html>

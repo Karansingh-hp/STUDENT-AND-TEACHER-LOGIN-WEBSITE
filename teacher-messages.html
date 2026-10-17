@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages · Faculty Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('teacher')) throw new Error();
+    const content = `
+      <div class="page-header"><h2><i class="fas fa-envelope"></i> Messages</h2><p>Communicate with students and colleagues.</p></div>
+      <div class="messages-layout">
+        <div class="messages-sidebar">
+          <div class="messages-sidebar-header"><h3>Inbox</h3></div>
+          <div id="messagesContactList"></div>
+        </div>
+        <div class="messages-content" id="messagesChat"></div>
+      </div>
+    `;
+    buildLayout('teacher-messages', content);
+    renderMessagesPage(true);
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grades · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('student')) throw new Error();
+    const totalCredits = DATA.grades.reduce((s, g) => s + g.credits, 0);
+    const totalPoints = DATA.grades.reduce((s, g) => s + (g.points * g.credits), 0);
+    const gpa = (totalPoints / totalCredits).toFixed(2);
+    const content = `
+      <div class="page-header"><h2><i class="fas fa-chart-line"></i> Grades & Performance</h2><p>Your academic performance this semester.</p></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-chart-line"></i></div><h3>Semester GPA</h3><div class="stat-value">${gpa}</div><div class="stat-change"><i class="fas fa-arrow-up"></i> +0.12</div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-award"></i></div><h3>Total Credits</h3><div class="stat-value">${totalCredits}</div><div class="stat-change"><i class="fas fa-info-circle"></i> 48 remaining</div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-percentage"></i></div><h3>Cumulative GPA</h3><div class="stat-value">${DATA.student.gpa}</div><div class="stat-change"><i class="fas fa-check-circle"></i> Dean's List</div></div>
+      </div>
+      <div class="dashboard-card">
+        <div class="card-header"><h3><i class="fas fa-table"></i> Course Grades</h3></div>
+        <div style="overflow-x:auto;">
+          <table class="grades-table">
+            <thead><tr><th>Code</th><th>Course</th><th>Credits</th><th>Midterm</th><th>Final</th><th>Grade</th><th>Points</th></tr></thead>
+            <tbody>
+              ${DATA.grades.map(g => `<tr>
+                <td><strong>${escapeHtml(g.course)}</strong></td><td>${escapeHtml(g.title)}</td><td>${g.credits}</td>
+                <td>${g.midterm}/100</td><td>${escapeHtml(String(g.final))}</td>
+                <td><span class="grade-badge ${g.grade.startsWith('A') ? 'a' : g.grade.startsWith('B') ? 'b' : 'c'}">${escapeHtml(g.grade)}</span></td>
+                <td>${g.points.toFixed(1)}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    buildLayout('grades', content);
+  </script>
+</body>
+</html>

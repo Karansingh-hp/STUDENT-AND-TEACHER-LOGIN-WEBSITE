@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile · Faculty Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    const session = requireAuth('teacher');
+    if (!session) throw new Error();
+    const t = session.user;
+    const content = `
+      <div class="page-header"><h2><i class="fas fa-user"></i> Faculty Profile</h2><p>Manage your professional information.</p></div>
+      <div class="profile-grid">
+        <div class="profile-card">
+          <div class="profile-avatar-large" style="background:linear-gradient(135deg,var(--teacher-accent),var(--teacher-accent-light));">${escapeHtml(t.initials)}</div>
+          <h2>${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</h2>
+          <div class="profile-id">Faculty ID: ${escapeHtml(t.id)}</div>
+          <div class="profile-program" style="background:#f3e8ff;color:var(--teacher-accent);">${escapeHtml(t.designation)}</div>
+          <div class="profile-stats">
+            <div class="profile-stat"><div class="number">${t.courses.length}</div><div class="label">Courses</div></div>
+            <div class="profile-stat"><div class="number">${t.totalStudents}</div><div class="label">Students</div></div>
+            <div class="profile-stat"><div class="number">${t.experience.split(' ')[0]}</div><div class="label">Years Exp</div></div>
+          </div>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-id-card"></i> Professional Information</h3>
+          <div class="info-row"><div class="label">Full Name</div><div class="value">${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</div></div>
+          <div class="info-row"><div class="label">Faculty ID</div><div class="value">${escapeHtml(t.id)}</div></div>
+          <div class="info-row"><div class="label">Email</div><div class="value">${escapeHtml(t.email)}</div></div>
+          <div class="info-row"><div class="label">Phone</div><div class="value">${escapeHtml(t.phone)}</div></div>
+          <div class="info-row"><div class="label">Department</div><div class="value">${escapeHtml(t.department)}</div></div>
+          <div class="info-row"><div class="label">Designation</div><div class="value">${escapeHtml(t.designation)}</div></div>
+          <div class="info-row"><div class="label">Specialization</div><div class="value">${escapeHtml(t.specialization)}</div></div>
+          <div class="info-row"><div class="label">Office</div><div class="value">${escapeHtml(t.office)}</div></div>
+          <div class="info-row"><div class="label">Office Hours</div><div class="value">${escapeHtml(t.officeHours)}</div></div>
+          <div class="info-row"><div class="label">Qualification</div><div class="value">${escapeHtml(t.qualification)}</div></div>
+          <div class="info-row"><div class="label">Experience</div><div class="value">${escapeHtml(t.experience)}</div></div>
+        </div>
+      </div>
+    `;
+    buildLayout('teacher-profile', content);
+  </script>
+</body>
+</html>

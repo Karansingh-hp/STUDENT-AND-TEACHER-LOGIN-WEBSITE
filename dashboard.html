@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('student')) throw new Error();
+    const s = DATA.student;
+    const content = `
+      <div class="page-header">
+        <h2><i class="fas fa-home"></i> Dashboard</h2>
+        <p>Welcome back, ${escapeHtml(s.firstName)}. Here's your academic overview.</p>
+      </div>
+      <div class="stats-grid">
+        ${DATA.stats.map(st => `
+          <a href="${st.route}" class="stat-card">
+            <div class="stat-icon ${st.color}"><i class="fas ${st.icon}"></i></div>
+            <h3>${escapeHtml(st.label)}</h3>
+            <div class="stat-value">${escapeHtml(st.value)}</div>
+            <div class="stat-change"><i class="fas ${st.changeIcon}"></i> ${escapeHtml(st.change)}</div>
+          </a>
+        `).join('')}
+      </div>
+      <div class="dashboard-grid">
+        <div>
+          <div class="dashboard-card">
+            <div class="card-header"><h3><i class="fas fa-clock"></i> Today's Schedule</h3><a href="timetable.html">View full timetable</a></div>
+            ${DATA.schedule.map(item => `
+              <div class="schedule-item">
+                <div class="schedule-time">${escapeHtml(item.time)}</div>
+                <div class="schedule-info"><h4>${escapeHtml(item.course)}</h4><p>${escapeHtml(item.instructor)} · ${escapeHtml(item.room)}</p></div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="dashboard-card">
+            <div class="card-header"><h3><i class="fas fa-tasks"></i> Upcoming Assignments</h3><a href="assignments.html">View all</a></div>
+            ${DATA.assignments.filter(a => a.status === 'pending').slice(0, 3).map(a => `
+              <div class="assignment-item">
+                <div class="assignment-status ${a.status}"></div>
+                <div class="assignment-info"><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.course)}</p></div>
+                <div class="assignment-meta"><div class="due-date"><i class="far fa-clock"></i> ${escapeHtml(a.due)}</div><span class="badge ${a.status}">${a.status}</span></div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="dashboard-card">
+            <div class="card-header"><h3><i class="fas fa-bullhorn"></i> Announcements</h3></div>
+            ${DATA.announcements.slice(0, 5).map(a => `
+              <div class="announcement-item"><h4>${escapeHtml(a.title)}</h4><p>${escapeHtml(a.body)}</p><div class="date">${escapeHtml(a.date)}</div></div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    buildLayout('dashboard', content);
+  </script>
+</body>
+</html>

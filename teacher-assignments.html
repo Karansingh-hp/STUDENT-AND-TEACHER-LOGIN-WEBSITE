@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assignments · Faculty Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('teacher')) throw new Error();
+
+    const all = DATA.teacherAssignments;
+    const content = `
+      <div class="page-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+          <div>
+            <h2><i class="fas fa-file-signature"></i> Assignments</h2>
+            <p>Create, manage, and grade assignments across all your courses.</p>
+          </div>
+          <button class="btn-primary" onclick="openCreateAssignmentModal()">
+            <i class="fas fa-plus"></i> Create Assignment
+          </button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-file-alt"></i></div><h3>Total</h3><div class="stat-value" id="tStatTotal">0</div><div class="stat-change"><i class="fas fa-info-circle"></i> All assignments</div></div>
+        <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-unlock"></i></div><h3>Open</h3><div class="stat-value" id="tStatOpen">0</div><div class="stat-change"><i class="fas fa-check-circle"></i> Accepting submissions</div></div>
+        <div class="stat-card"><div class="stat-icon green"><i class="fas fa-paper-plane"></i></div><h3>Submissions</h3><div class="stat-value" id="tStatSubmissions">0</div><div class="stat-change"><i class="fas fa-arrow-up"></i> Total received</div></div>
+        <div class="stat-card"><div class="stat-icon orange"><i class="fas fa-hourglass-half"></i></div><h3>Pending Grade</h3><div class="stat-value" id="tStatPending">0</div><div class="stat-change" style="color:var(--warning);"><i class="fas fa-clock"></i> Needs attention</div></div>
+        <div class="stat-card"><div class="stat-icon teal"><i class="fas fa-check-double"></i></div><h3>Graded</h3><div class="stat-value" id="tStatGraded">0</div><div class="stat-change"><i class="fas fa-award"></i> Completed</div></div>
+        <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-chart-line"></i></div><h3>Class Average</h3><div class="stat-value" id="tStatAvg">—</div><div class="stat-change"><i class="fas fa-info-circle"></i> Across graded</div></div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filters-bar">
+        <div class="filters-row">
+          <div class="search-input">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Search assignments..." oninput="searchTeacherAssignments(this.value)">
+          </div>
+          <select class="filter-select" id="tCourseFilter">
+            <option value="all">All Courses</option>
+            <option value="cs201">CS 201</option>
+            <option value="cs305">CS 305</option>
+          </select>
+          <select class="filter-select" onchange="sortTeacherAssignments(this.value)">
+            <option value="due-asc">Sort: Due Date ↑</option>
+            <option value="due-desc">Sort: Due Date ↓</option>
+            <option value="submissions">Sort: Most Submissions</option>
+            <option value="title-asc">Sort: Title A-Z</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- STATUS TABS -->
+      <div class="tab-filters">
+        <button class="tab-filter active" onclick="filterTeacherAssignments('all');setActiveTeacherTab(this)"><i class="fas fa-list"></i> All</button>
+        <button class="tab-filter" onclick="filterTeacherAssignments('open');setActiveTeacherTab(this)"><i class="fas fa-unlock"></i> Open</button>
+        <button class="tab-filter" onclick="filterTeacherAssignments('draft');setActiveTeacherTab(this)"><i class="fas fa-file"></i> Draft</button>
+        <button class="tab-filter" onclick="filterTeacherAssignments('scheduled');setActiveTeacherTab(this)"><i class="fas fa-calendar"></i> Scheduled</button>
+        <button class="tab-filter" onclick="filterTeacherAssignments('closed');setActiveTeacherTab(this)"><i class="fas fa-lock"></i> Closed</button>
+      </div>
+
+      <div class="assignments-count-bar">
+        <span id="teacherAssignmentsCount" style="font-size:0.82rem;color:var(--text-light);font-weight:600;"></span>
+      </div>
+
+      <!-- ASSIGNMENTS LIST -->
+      <div class="teacher-assignments-list" id="teacherAssignmentsList"></div>
+    `;
+
+    buildLayout('teacher-assignments', content);
+    initTeacherAssignmentsPage();
+
+    function setActiveTeacherTab(btn) {
+      document.querySelectorAll('.tab-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  </script>
+</body>
+</html>

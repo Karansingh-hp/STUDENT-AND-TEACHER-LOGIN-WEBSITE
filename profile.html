@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    const session = requireAuth('student');
+    if (!session) throw new Error();
+    const s = session.user;
+    const content = `
+      <div class="page-header"><h2><i class="fas fa-user"></i> My Profile</h2><p>Manage your personal and academic information.</p></div>
+      <div class="profile-grid">
+        <div class="profile-card">
+          <div class="profile-avatar-large">${escapeHtml(s.initials)}</div>
+          <h2>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</h2>
+          <div class="profile-id">Student ID: ${escapeHtml(s.id)}</div>
+          <div class="profile-program">${escapeHtml(s.program)}</div>
+          <div class="profile-stats">
+            <div class="profile-stat"><div class="number">${escapeHtml(s.gpa)}</div><div class="label">GPA</div></div>
+            <div class="profile-stat"><div class="number">${escapeHtml(s.credits)}</div><div class="label">Courses</div></div>
+            <div class="profile-stat"><div class="number">${escapeHtml(s.attendance)}%</div><div class="label">Attendance</div></div>
+          </div>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-id-card"></i> Personal Information</h3>
+          <div class="info-row"><div class="label">Full Name</div><div class="value">${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</div></div>
+          <div class="info-row"><div class="label">Student ID</div><div class="value">${escapeHtml(s.id)}</div></div>
+          <div class="info-row"><div class="label">Email</div><div class="value">${escapeHtml(s.email)}</div></div>
+          <div class="info-row"><div class="label">Phone</div><div class="value">${escapeHtml(s.phone)}</div></div>
+          <div class="info-row"><div class="label">Date of Birth</div><div class="value">${escapeHtml(s.dob)}</div></div>
+          <div class="info-row"><div class="label">Address</div><div class="value">${escapeHtml(s.address)}</div></div>
+          <div class="info-row"><div class="label">Program</div><div class="value">${escapeHtml(s.program)}</div></div>
+          <div class="info-row"><div class="label">Year</div><div class="value">${escapeHtml(s.year)}</div></div>
+          <div class="info-row"><div class="label">Advisor</div><div class="value">${escapeHtml(s.advisor)}</div></div>
+        </div>
+      </div>
+    `;
+    buildLayout('profile', content);
+  </script>
+</body>
+</html>

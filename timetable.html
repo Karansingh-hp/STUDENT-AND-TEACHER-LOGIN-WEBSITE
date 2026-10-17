@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timetable · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('student')) throw new Error();
+    const tt = DATA.timetable;
+    const content = `
+      <div class="page-header"><h2><i class="fas fa-calendar-alt"></i> Weekly Timetable</h2><p>Your complete class schedule.</p></div>
+      <div class="timetable-wrapper">
+        <table class="timetable">
+          <thead><tr><th style="width:120px;">Time</th>${tt.days.map(d => `<th>${d}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${tt.slots.map(slot => `<tr>
+              <td class="time-col">${escapeHtml(slot.time)}</td>
+              <td>${slot.mon ? `<div class="class-block ${slot.mon.type}"><strong>${escapeHtml(slot.mon.course)}</strong>Room ${escapeHtml(slot.mon.room)}</div>` : ''}</td>
+              <td>${slot.tue ? `<div class="class-block ${slot.tue.type}"><strong>${escapeHtml(slot.tue.course)}</strong>Room ${escapeHtml(slot.tue.room)}</div>` : ''}</td>
+              <td>${slot.wed ? `<div class="class-block ${slot.wed.type}"><strong>${escapeHtml(slot.wed.course)}</strong>Room ${escapeHtml(slot.wed.room)}</div>` : ''}</td>
+              <td>${slot.thu ? `<div class="class-block ${slot.thu.type}"><strong>${escapeHtml(slot.thu.course)}</strong>Room ${escapeHtml(slot.thu.room)}</div>` : ''}</td>
+              <td>${slot.fri ? `<div class="class-block ${slot.fri.type}"><strong>${escapeHtml(slot.fri.course)}</strong>Room ${escapeHtml(slot.fri.room)}</div>` : ''}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+    buildLayout('timetable', content);
+  </script>
+</body>
+</html>

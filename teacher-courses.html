@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Courses · Faculty Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('teacher')) throw new Error();
+
+    const content = `
+      <div class="page-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+          <div>
+            <h2><i class="fas fa-chalkboard-teacher"></i> My Courses</h2>
+            <p>Manage your teaching courses, students, materials, and content.</p>
+          </div>
+          <button class="btn-primary" onclick="showToast('Create course dialog opened', 'info')">
+            <i class="fas fa-plus"></i> Create New Course
+          </button>
+        </div>
+      </div>
+
+      <div class="teacher-courses-grid" id="teacherCoursesGrid"></div>
+    `;
+
+    buildLayout('teacher-courses', content);
+    renderTeacherCoursesPage();
+  </script>
+</body>
+</html>

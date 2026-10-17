@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library · Westfield Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+  <script src="script.js"></script>
+  <script>
+    if (!requireAuth('student')) throw new Error();
+    const content = `
+      <div class="page-header"><h2><i class="fas fa-bookmark"></i> Digital Library</h2><p>Browse and borrow from our collection.</p></div>
+      <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search books..." oninput="searchBooks(this.value)"></div>
+      <div class="library-grid" id="libraryGrid">
+        ${DATA.libraryBooks.map(b => renderBookCard(b)).join('')}
+      </div>
+    `;
+    buildLayout('library', content);
+  </script>
+</body>
+</html>
