@@ -11,7 +11,7 @@
 
 :root {
   /* Theme Colors */
-  --primary: #1a5b9c;
+  --primary: #0b2b4b;
   --primary-light: #123b62;
   --accent: #1e5fa8;
   --accent-light: #2a7de0;
@@ -26,10 +26,10 @@
   --danger: #b91c1c;
   
   /* Sizes & Spacing */
-  --radius: 10px;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --radius: 12px;
+  --shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 10px 25px rgba(0, 20, 50, 0.15);
-  --sidebar-width: 220px;
+  --sidebar-width: 245px; /* 🔥 Sidebar ko thoda bada kiya */
   
   /* Teacher Theme */
   --teacher-accent: #7c3aed;
@@ -40,12 +40,12 @@ body {
   background: var(--bg-light); 
   min-height: 100vh; 
   color: var(--text-dark); 
-  font-size: 13px; 
+  font-size: 14.5px; /* 🔥 Base font ko 13px se 14.5px kiya */
   line-height: 1.5;
 }
 
 /* Custom Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-light); }
 ::-webkit-scrollbar-thumb { background: #c8d4e3; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-light); }
