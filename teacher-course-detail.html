@@ -3,32 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course Detail · Faculty Portal</title>
+  <title>Manage Course · Faculty Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    if (!requireAuth('teacher')) throw new Error();
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
 
-    const content = `
-      <div class="breadcrumb"><a href="teacher-courses.html">My Courses</a> <i class="fas fa-chevron-right"></i> <span>Course Detail</span></div>
-      <div class="course-detail-hero" id="tcHero"></div>
-      <div class="course-tabs">
-        <button class="course-tab active" data-tab="overview" onclick="setTeacherCourseTab('overview')"><i class="fas fa-info-circle"></i> Overview</button>
-        <button class="course-tab" data-tab="students" onclick="setTeacherCourseTab('students')"><i class="fas fa-users"></i> Students</button>
-        <button class="course-tab" data-tab="modules" onclick="setTeacherCourseTab('modules')"><i class="fas fa-list-ul"></i> Modules</button>
-        <button class="course-tab" data-tab="materials" onclick="setTeacherCourseTab('materials')"><i class="fas fa-folder-open"></i> Materials</button>
-        <button class="course-tab" data-tab="announcements" onclick="setTeacherCourseTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</button>
-      </div>
-      <div id="tcTabContent"></div>
-    `;
+      const content = `
+        <div class="breadcrumb">
+          <a href="teacher-courses.html">My Courses</a> <i class="fas fa-chevron-right"></i> <span>Manage</span>
+        </div>
+        <div class="course-detail-hero" id="tcHero"></div>
+        <div class="course-tabs">
+          <button class="course-tab active" data-tab="students" onclick="setTeacherCourseTab('students')"><i class="fas fa-users"></i> Students</button>
+          <button class="course-tab" data-tab="modules" onclick="setTeacherCourseTab('modules')"><i class="fas fa-list-ul"></i> Modules</button>
+          <button class="course-tab" data-tab="materials" onclick="setTeacherCourseTab('materials')"><i class="fas fa-folder-open"></i> Materials</button>
+          <button class="course-tab" data-tab="announcements" onclick="setTeacherCourseTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</button>
+        </div>
+        <div id="tcTabContent"></div>
+      `;
 
-    buildLayout('teacher-courses', content);
-    initTeacherCourseDetailPage();
+      buildLayout('teacher-courses', content);
+      initTeacherCourseDetailPage();
+    });
   </script>
 </body>
 </html>

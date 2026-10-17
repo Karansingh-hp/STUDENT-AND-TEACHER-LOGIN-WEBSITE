@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register · Westfield Institute</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div class="auth-page">
@@ -18,11 +22,6 @@
         <div class="brand-message">
           <h2>Join our community.</h2>
           <p>Create your student account and start your academic journey.</p>
-        </div>
-        <div class="brand-features">
-          <div class="brand-feature"><i class="fas fa-user-plus"></i><span>Quick & easy signup</span></div>
-          <div class="brand-feature"><i class="fas fa-book-open"></i><span>Access all courses</span></div>
-          <div class="brand-feature"><i class="fas fa-chart-line"></i><span>Track your progress</span></div>
         </div>
       </div>
       <div class="auth-form-panel">
@@ -55,31 +54,17 @@
             <div class="input-row">
               <div class="input-group"><label>Program *</label>
                 <div class="input-field"><i class="fas fa-graduation-cap"></i>
-                  <select id="regProgram">
-                    <option>B.Tech Computer Science</option>
-                    <option>B.Tech Electronics</option>
-                    <option>B.Tech Mechanical</option>
-                    <option>B.Sc Mathematics</option>
-                  </select>
+                  <select id="regProgram"><option>B.Tech Computer Science</option><option>B.Tech Electronics</option></select>
                 </div>
               </div>
               <div class="input-group"><label>Year *</label>
                 <div class="input-field"><i class="fas fa-calendar"></i>
-                  <select id="regYear">
-                    <option>1st Year (Semester 1)</option>
-                    <option>2nd Year (Semester 3)</option>
-                    <option>3rd Year (Semester 5)</option>
-                  </select>
+                  <select id="regYear"><option>1st Year</option><option>2nd Year</option></select>
                 </div>
               </div>
             </div>
-            <div class="input-row">
-              <div class="input-group"><label>Phone</label>
-                <div class="input-field"><i class="fas fa-phone"></i><input type="tel" id="regPhone" placeholder="+1 (555) 000-0000"></div>
-              </div>
-              <div class="input-group"><label>Date of Birth</label>
-                <div class="input-field"><i class="fas fa-birthday-cake"></i><input type="date" id="regDob"></div>
-              </div>
+            <div class="input-group"><label>Phone</label>
+              <div class="input-field"><i class="fas fa-phone"></i><input type="tel" id="regPhone" placeholder="+1 (555) 000-0000"></div>
             </div>
             <div class="input-row">
               <div class="input-group"><label>Password *</label>
@@ -90,9 +75,7 @@
               </div>
             </div>
           </div>
-          <div id="step1Buttons">
-            <button type="button" class="auth-btn" onclick="goNextStep()">Continue <i class="fas fa-arrow-right"></i></button>
-          </div>
+          <div id="step1Buttons"><button type="button" class="auth-btn" onclick="goNextStep()">Continue <i class="fas fa-arrow-right"></i></button></div>
           <div id="step2Buttons" style="display:none;">
             <button type="submit" class="auth-btn" id="registerBtn"><i class="fas fa-user-plus"></i> Create Account</button>
             <button type="button" class="btn-secondary" style="width:100%;justify-content:center;margin-bottom:1rem;" onclick="goPrevStep()"><i class="fas fa-arrow-left"></i> Back</button>
@@ -104,7 +87,21 @@
   </div>
 
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
-  <script>initRegisterPage();</script>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initRegisterPage === 'function') initRegisterPage();
+    });
+  </script>
 </body>
 </html>

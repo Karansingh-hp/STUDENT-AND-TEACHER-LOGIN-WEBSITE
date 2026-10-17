@@ -5,49 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Courses · Westfield Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    if (!requireAuth('student')) throw new Error();
-    const content = `
-      <div class="page-header">
-        <h2><i class="fas fa-book"></i> My Courses</h2>
-        <p>View your enrolled courses, track progress, and access materials.</p>
-      </div>
-      <div class="tab-filters">
-        <button class="tab-filter active">All (${DATA.courses.length})</button>
-      </div>
-      <div class="courses-grid">
-        ${DATA.courses.map(c => {
-          const comp = c.modules.reduce((s, m) => s + m.lessons.filter(l => l.completed).length, 0);
-          const total = c.modules.reduce((s, m) => s + m.lessons.length, 0);
-          return `
-            <a href="course-detail.html?id=${c.id}" class="course-card">
-              <div class="course-banner ${c.theme}">
-                <i class="fas ${c.icon}"></i>
-                <span class="credit-badge">${c.credits} Credits</span>
-              </div>
-              <div class="course-content">
-                <div class="course-code">${escapeHtml(c.code)} · ${escapeHtml(c.schedule)}</div>
-                <h3>${escapeHtml(c.title)}</h3>
-                <p>${escapeHtml(c.description)}</p>
-                <div class="course-meta">
-                  <span><i class="fas fa-user"></i> ${escapeHtml(c.instructor)}</span>
-                  <span><i class="fas fa-award"></i> ${escapeHtml(c.grade)}</span>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('student')) return;
+
+      const content = `
+        <div class="page-header">
+          <h2><i class="fas fa-book"></i> My Courses</h2>
+          <p>View your enrolled courses, track progress, and access materials.</p>
+        </div>
+        
+        <div class="courses-grid">
+          ${DATA.courses.map(c => {
+            // Calculate progress dynamically
+            let total = 0;
+            let done = 0;
+            c.modules.forEach(m => {
+              total += m.lessons.length;
+              done += m.lessons.filter(l => l.completed).length;
+            });
+            const progressPct = total > 0 ? Math.round((done / total) * 100) : c.progress;
+
+            return `
+              <a href="course-detail.html?id=${c.id}" class="course-card" style="text-decoration:none; color:inherit; display:flex; flex-direction:column;">
+                <div class="course-banner ${c.theme}">
+                  <i class="fas ${c.icon}"></i>
+                  <span class="credit-badge">${c.credits} Credits</span>
                 </div>
-                <div class="progress-bar"><div class="progress" style="width:${c.progress}%;"></div></div>
-                <div class="progress-text"><span>${comp}/${total} lessons</span><span>${c.progress}% complete</span></div>
-              </div>
-            </a>
-          `;
-        }).join('')}
-      </div>
-    `;
-    buildLayout('courses', content);
+                <div class="course-content">
+                  <div class="course-code">${escapeHtml(c.code)} · ${escapeHtml(c.schedule)}</div>
+                  <h3>${escapeHtml(c.title)}</h3>
+                  <p>${escapeHtml(c.description)}</p>
+                  
+                  <div class="course-meta">
+                    <span><i class="fas fa-user"></i> ${escapeHtml(c.instructor)}</span>
+                    <span><i class="fas fa-star"></i> ${c.rating || '4.5'}/5</span>
+                  </div>
+                  
+                  <div class="progress-bar" style="margin-top:auto;">
+                    <div class="progress" style="width:${progressPct}%;"></div>
+                  </div>
+                  <div class="progress-text">
+                    <span>${done}/${total} lessons</span>
+                    <span>${progressPct}% complete</span>
+                  </div>
+                </div>
+              </a>
+            `;
+          }).join('')}
+        </div>
+      `;
+      
+      buildLayout('courses', content);
+    });
   </script>
 </body>
 </html>

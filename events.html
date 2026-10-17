@@ -5,20 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Events · Westfield Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    if (!requireAuth('student')) throw new Error();
-    const content = `
-      <div class="page-header"><h2><i class="fas fa-calendar-check"></i> Campus Events</h2><p>Discover upcoming events and activities.</p></div>
-      <div class="events-list">
-        ${DATA.events.map(e => `
-          <div class="event-card">
-            <div class="event-date"><div class="day">${escapeHtml(e.day)}</div><div class="month">${escapeHtml(e.month)}</div></div>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('student')) return;
+
+      // 🔥 LocalStorage se events load karo
+      let allEvents = Storage.load('westfield_shared_events', DATA.events || []);
+
+      function renderEvents(filterCategory = 'all', searchQuery = '') {
+        const container = document.getElementById('eventsContainer');
+        
+        let filtered = allEvents;
+        if (filterCategory !== 'all') {
+          filtered = filtered.filter(e => e.category === filterCategory);
+        }
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter(e => 
+            e.title.toLowerCase().includes(q) || 
+            e.description.toLowerCase().includes(q)
+          );
+        }
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:3rem;">
+              <i class="fas fa-calendar-times" style="font-size:3rem; color:#c8d4e3; margin-bottom:1rem; display:block;"></i>
+              <h3 style="color:var(--text-mid);">No events found</h3>
+              <p style="color:var(--text-light);">Try changing the filter or search query.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filtered.map(e => `
+          <div class="event-card" onclick="showToast('Viewing ${escapeHtml(e.title)}...', 'info')">
+            <div class="event-date">
+              <div class="day">${escapeHtml(e.day)}</div>
+              <div class="month">${escapeHtml(e.month)}</div>
+            </div>
             <div class="event-info">
               <h4>${escapeHtml(e.title)}</h4>
               <p>${escapeHtml(e.description)}</p>
@@ -29,10 +73,61 @@
               </div>
             </div>
           </div>
-        `).join('')}
-      </div>
-    `;
-    buildLayout('events', content);
+        `).join('');
+      }
+
+      const content = `
+        <div class="page-header">
+          <h2><i class="fas fa-calendar-check"></i> Campus Events</h2>
+          <p>Discover upcoming events, workshops, and activities on campus.</p>
+        </div>
+
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Search events..." oninput="handleSearch(this.value)">
+        </div>
+
+        <div class="tab-filters" style="margin-bottom: 1.5rem;">
+          <button class="tab-filter active" onclick="handleFilter('all', this)">All Events</button>
+          <button class="tab-filter" onclick="handleFilter('Technology', this)">Technology</button>
+          <button class="tab-filter" onclick="handleFilter('Cultural', this)">Cultural</button>
+          <button class="tab-filter" onclick="handleFilter('Academic', this)">Academic</button>
+          <button class="tab-filter" onclick="handleFilter('Career', this)">Career</button>
+        </div>
+
+        <div class="events-list" id="eventsContainer">
+          <!-- Events render here -->
+        </div>
+      `;
+      
+      buildLayout('events', content);
+      
+      // Initial Render
+      renderEvents();
+
+      // Search function
+      window.handleSearch = (query) => {
+        const activeBtn = document.querySelector('.tab-filter.active');
+        const activeFilter = activeBtn ? activeBtn.textContent.trim() : 'All Events';
+        
+        let cat = 'all';
+        if (activeFilter === 'Technology') cat = 'Technology';
+        else if (activeFilter === 'Cultural') cat = 'Cultural';
+        else if (activeFilter === 'Academic') cat = 'Academic';
+        else if (activeFilter === 'Career') cat = 'Career';
+        
+        renderEvents(cat, query);
+      };
+
+      // Filter function
+      window.handleFilter = (category, btn) => {
+        document.querySelectorAll('.tab-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const searchQuery = document.getElementById('searchInput').value;
+        renderEvents(category, searchQuery);
+      };
+    });
   </script>
 </body>
 </html>

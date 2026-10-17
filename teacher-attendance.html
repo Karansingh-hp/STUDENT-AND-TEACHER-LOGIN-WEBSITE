@@ -5,45 +5,158 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Attendance · Faculty Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    if (!requireAuth('teacher')) throw new Error();
-    const t = DATA.teacher;
-    const course = t.courses.map(id => getCourseById(id)).filter(Boolean)[0];
-    const students = course ? course.students : [];
-    const content = `
-      <div class="page-header"><h2><i class="fas fa-user-check"></i> Mark Attendance</h2><p>${course ? escapeHtml(course.code) + ' - ' + escapeHtml(course.title) : ''} · ${new Date().toLocaleDateString()}</p></div>
-      <div class="dashboard-card">
-        <div class="card-header"><h3><i class="fas fa-list-check"></i> Today's Attendance</h3>
-          <div style="display:flex;gap:0.5rem;">
-            <button class="tab-filter" onclick="markAllAttendance('present', '${course?.id || 'cs201'}')">All Present</button>
-            <button class="tab-filter" onclick="markAllAttendance('absent', '${course?.id || 'cs201'}')">All Absent</button>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
+
+      // Aaj ki date format karo (YYYY-MM-DD)
+      const todayDate = new Date().toISOString().split('T')[0];
+
+      function renderAttendancePage() {
+        // 🔥 LocalStorage se students load karo
+        let allStudents = Storage.load('westfield_all_students', []);
+        if (allStudents.length === 0) {
+          allStudents = [DATA.student];
+          Storage.save('westfield_all_students', allStudents);
+        }
+
+        // 🔥 Aaj ki attendance load karo (agar pehle se save hai)
+        let todayAttendance = Storage.load('westfield_attendance_' + todayDate, {});
+
+        const content = `
+          <div class="page-header">
+            <h2><i class="fas fa-user-check"></i> Mark Attendance</h2>
+            <p>Today: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
-        </div>
-        <div class="attendance-list">
-          ${students.map(s => `
-            <div class="attendance-row">
-              <div class="student-row" style="flex:1;border:none;background:transparent;padding:0;">
-                <div class="student-avatar">${escapeHtml(s.name.split(' ').map(n => n[0]).join('').slice(0,2))}</div>
-                <div class="student-info"><h5>${escapeHtml(s.name)}</h5><p>${escapeHtml(s.id)}</p></div>
-              </div>
-              <div class="attendance-actions">
-                <button class="att-btn present" data-sid="${s.id}" onclick="markAttendance('${s.id}','present')">Present</button>
-                <button class="att-btn late" data-sid="${s.id}" onclick="markAttendance('${s.id}','late')">Late</button>
-                <button class="att-btn absent" data-sid="${s.id}" onclick="markAttendance('${s.id}','absent')">Absent</button>
+
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3><i class="fas fa-list-check"></i> Today's Attendance (${allStudents.length} Students)</h3>
+              <div style="display:flex; gap:0.5rem;">
+                <button class="tab-filter" onclick="markAll('present')">All Present</button>
+                <button class="tab-filter" onclick="markAll('absent')">All Absent</button>
               </div>
             </div>
-          `).join('')}
-        </div>
-        <button class="btn-primary" style="margin-top:1.2rem;width:100%;justify-content:center;" onclick="submitAttendance()"><i class="fas fa-check-circle"></i> Submit Attendance</button>
-      </div>
-    `;
-    buildLayout('teacher-attendance', content);
+
+            <div class="attendance-list" id="attendanceList">
+              ${allStudents.map(s => {
+                const currentStatus = todayAttendance[s.id] || null;
+                return `
+                  <div class="attendance-row">
+                    <div class="student-row" style="flex:1; border:none; background:transparent; padding:0;">
+                      <div class="student-avatar">${escapeHtml(s.initials || (s.firstName[0] + s.lastName[0]))}</div>
+                      <div class="student-info">
+                        <h5>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</h5>
+                        <p>${escapeHtml(s.id)} · Current: ${s.attendance || 0}%</p>
+                      </div>
+                    </div>
+                    <div class="attendance-actions" data-sid="${s.id}">
+                      <button class="att-btn present ${currentStatus === 'present' ? 'active' : ''}" onclick="markStudent('${s.id}', 'present')">Present</button>
+                      <button class="att-btn late ${currentStatus === 'late' ? 'active' : ''}" onclick="markStudent('${s.id}', 'late')">Late</button>
+                      <button class="att-btn absent ${currentStatus === 'absent' ? 'active' : ''}" onclick="markStudent('${s.id}', 'absent')">Absent</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <button class="btn-primary" style="width:100%; justify-content:center; margin-top:1.5rem; padding:1rem;" onclick="submitAttendance()">
+              <i class="fas fa-check-circle"></i> Submit Attendance
+            </button>
+          </div>
+        `;
+
+        buildLayout('teacher-attendance', content);
+      }
+
+      // Mark a single student
+      window.markStudent = (studentId, status) => {
+        let todayAttendance = Storage.load('westfield_attendance_' + todayDate, {});
+        todayAttendance[studentId] = status;
+        Storage.save('westfield_attendance_' + todayDate, todayAttendance);
+        
+        // Update UI
+        const container = document.querySelector(`.attendance-actions[data-sid="${studentId}"]`);
+        if (container) {
+          container.querySelectorAll('.att-btn').forEach(b => b.classList.remove('active'));
+          container.querySelector(`.att-btn.${status}`).classList.add('active');
+        }
+      };
+
+      // Mark all students
+      window.markAll = (status) => {
+        let allStudents = Storage.load('westfield_all_students', []);
+        let todayAttendance = Storage.load('westfield_attendance_' + todayDate, {});
+        
+        allStudents.forEach(s => {
+          todayAttendance[s.id] = status;
+        });
+        
+        Storage.save('westfield_attendance_' + todayDate, todayAttendance);
+        renderAttendancePage(); // Refresh UI
+        showToast(`All marked as ${status}.`, 'success');
+      };
+
+      // Submit attendance (Calculate overall % and save to student profile)
+      window.submitAttendance = () => {
+        let todayAttendance = Storage.load('westfield_attendance_' + todayDate, {});
+        let allStudents = Storage.load('westfield_all_students', []);
+
+        if (Object.keys(todayAttendance).length === 0) {
+          showToast('Please mark attendance first.', 'error');
+          return;
+        }
+
+        // 🔥 Calculate new percentage
+        allStudents.forEach(student => {
+          const status = todayAttendance[student.id];
+          if (status) {
+            // Simple logic: Present/Late = +1 to attendance, Absent = -1
+            let currentAtt = student.attendance || 100; // Start at 100 for new
+            if (status === 'present' || status === 'late') {
+              currentAtt = Math.min(100, currentAtt + 1);
+            } else if (status === 'absent') {
+              currentAtt = Math.max(0, currentAtt - 2);
+            }
+            student.attendance = currentAtt;
+          }
+        });
+
+        // Save updated students
+        Storage.save('westfield_all_students', allStudents);
+
+        // Agar Alex (current logged-in student) hai, toh uske active session mein bhi update karo
+        const session = Storage.load('westfield_all_students', []).find(s => s.id === DATA.student.id);
+        if (session) {
+          Storage.save('westfield_student_profile', session);
+        }
+
+        showToast('Attendance submitted and student profiles updated!', 'success');
+        setTimeout(() => location.reload(), 1000);
+      };
+
+      renderAttendancePage();
+    });
   </script>
 </body>
 </html>

@@ -3,49 +3,169 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profile · Faculty Portal</title>
+  <title>Faculty Profile · Westfield Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    const session = requireAuth('teacher');
-    if (!session) throw new Error();
-    const t = session.user;
-    const content = `
-      <div class="page-header"><h2><i class="fas fa-user"></i> Faculty Profile</h2><p>Manage your professional information.</p></div>
-      <div class="profile-grid">
-        <div class="profile-card">
-          <div class="profile-avatar-large" style="background:linear-gradient(135deg,var(--teacher-accent),var(--teacher-accent-light));">${escapeHtml(t.initials)}</div>
-          <h2>${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</h2>
-          <div class="profile-id">Faculty ID: ${escapeHtml(t.id)}</div>
-          <div class="profile-program" style="background:#f3e8ff;color:var(--teacher-accent);">${escapeHtml(t.designation)}</div>
-          <div class="profile-stats">
-            <div class="profile-stat"><div class="number">${t.courses.length}</div><div class="label">Courses</div></div>
-            <div class="profile-stat"><div class="number">${t.totalStudents}</div><div class="label">Students</div></div>
-            <div class="profile-stat"><div class="number">${t.experience.split(' ')[0]}</div><div class="label">Years Exp</div></div>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
+
+      function renderTeacherProfile() {
+        // 🔥 LocalStorage se latest teacher data load karo
+        const savedTeacher = Storage.load('westfield_teacher_profile', DATA.teacher);
+        const t = savedTeacher;
+
+        const content = `
+          <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2><i class="fas fa-user"></i> Faculty Profile</h2>
+              <p>Manage your professional information.</p>
+            </div>
+            <button class="btn-primary" onclick="openEditTeacherProfile()">
+              <i class="fas fa-edit"></i> Edit Profile
+            </button>
           </div>
-        </div>
-        <div class="info-card">
-          <h3><i class="fas fa-id-card"></i> Professional Information</h3>
-          <div class="info-row"><div class="label">Full Name</div><div class="value">${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</div></div>
-          <div class="info-row"><div class="label">Faculty ID</div><div class="value">${escapeHtml(t.id)}</div></div>
-          <div class="info-row"><div class="label">Email</div><div class="value">${escapeHtml(t.email)}</div></div>
-          <div class="info-row"><div class="label">Phone</div><div class="value">${escapeHtml(t.phone)}</div></div>
-          <div class="info-row"><div class="label">Department</div><div class="value">${escapeHtml(t.department)}</div></div>
-          <div class="info-row"><div class="label">Designation</div><div class="value">${escapeHtml(t.designation)}</div></div>
-          <div class="info-row"><div class="label">Specialization</div><div class="value">${escapeHtml(t.specialization)}</div></div>
-          <div class="info-row"><div class="label">Office</div><div class="value">${escapeHtml(t.office)}</div></div>
-          <div class="info-row"><div class="label">Office Hours</div><div class="value">${escapeHtml(t.officeHours)}</div></div>
-          <div class="info-row"><div class="label">Qualification</div><div class="value">${escapeHtml(t.qualification)}</div></div>
-          <div class="info-row"><div class="label">Experience</div><div class="value">${escapeHtml(t.experience)}</div></div>
-        </div>
-      </div>
-    `;
-    buildLayout('teacher-profile', content);
+
+          <div class="profile-grid">
+            <div class="profile-card">
+              <div class="profile-avatar-large" style="background:linear-gradient(135deg,var(--teacher-accent),var(--teacher-accent-light));">${escapeHtml(t.initials)}</div>
+              <h2>${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</h2>
+              <div class="profile-id">Faculty ID: ${escapeHtml(t.id)}</div>
+              <div class="profile-program" style="background:#f3e8ff;color:var(--teacher-accent);">${escapeHtml(t.designation)}</div>
+              <div class="profile-stats">
+                <div class="profile-stat"><div class="number">${t.courses ? t.courses.length : 0}</div><div class="label">Courses</div></div>
+                <div class="profile-stat"><div class="number">${escapeHtml(t.totalStudents || 0)}</div><div class="label">Students</div></div>
+                <div class="profile-stat"><div class="number">${t.experience ? t.experience.split(' ')[0] : '0'}</div><div class="label">Years Exp</div></div>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3><i class="fas fa-id-card"></i> Professional Information</h3>
+              <div class="info-row"><div class="label">Full Name</div><div class="value">${escapeHtml(t.firstName)} ${escapeHtml(t.lastName)}</div></div>
+              <div class="info-row"><div class="label">Faculty ID</div><div class="value">${escapeHtml(t.id)}</div></div>
+              <div class="info-row"><div class="label">Email</div><div class="value">${escapeHtml(t.email)}</div></div>
+              <div class="info-row"><div class="label">Phone</div><div class="value">${escapeHtml(t.phone)}</div></div>
+              <div class="info-row"><div class="label">Department</div><div class="value">${escapeHtml(t.department)}</div></div>
+              <div class="info-row"><div class="label">Designation</div><div class="value">${escapeHtml(t.designation)}</div></div>
+              <div class="info-row"><div class="label">Specialization</div><div class="value">${escapeHtml(t.specialization)}</div></div>
+              <div class="info-row"><div class="label">Office</div><div class="value">${escapeHtml(t.office)}</div></div>
+              <div class="info-row"><div class="label">Office Hours</div><div class="value">${escapeHtml(t.officeHours)}</div></div>
+              <div class="info-row"><div class="label">Qualification</div><div class="value">${escapeHtml(t.qualification)}</div></div>
+              <div class="info-row"><div class="label">Experience</div><div class="value">${escapeHtml(t.experience)}</div></div>
+            </div>
+          </div>
+        `;
+
+        buildLayout('teacher-profile', content);
+      }
+
+      // Edit Modal
+      window.openEditTeacherProfile = () => {
+        const t = Storage.load('westfield_teacher_profile', DATA.teacher);
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay show';
+        modal.id = 'editTeacherModal';
+        modal.innerHTML = `
+          <div class="modal-box" style="max-width:600px; max-height:90vh; overflow-y:auto;">
+            <h3><i class="fas fa-user-edit"></i> Edit Faculty Profile</h3>
+            
+            <div class="input-row" style="margin-top:1rem;">
+              <div class="input-group">
+                <label>First Name</label>
+                <div class="input-field"><i class="fas fa-user"></i><input type="text" id="tFirstName" value="${escapeHtml(t.firstName)}"></div>
+              </div>
+              <div class="input-group">
+                <label>Last Name</label>
+                <div class="input-field"><i class="fas fa-user"></i><input type="text" id="tLastName" value="${escapeHtml(t.lastName)}"></div>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Email</label>
+              <div class="input-field"><i class="fas fa-envelope"></i><input type="email" id="tEmail" value="${escapeHtml(t.email)}"></div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label>Phone</label>
+                <div class="input-field"><i class="fas fa-phone"></i><input type="tel" id="tPhone" value="${escapeHtml(t.phone)}"></div>
+              </div>
+              <div class="input-group">
+                <label>Office</label>
+                <div class="input-field"><i class="fas fa-door-open"></i><input type="text" id="tOffice" value="${escapeHtml(t.office)}"></div>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Office Hours</label>
+              <div class="input-field"><i class="fas fa-clock"></i><input type="text" id="tOfficeHours" value="${escapeHtml(t.officeHours)}"></div>
+            </div>
+
+            <div class="input-group">
+              <label>Specialization</label>
+              <div class="input-field"><i class="fas fa-graduation-cap"></i><input type="text" id="tSpecialization" value="${escapeHtml(t.specialization)}"></div>
+            </div>
+
+            <div class="modal-actions" style="margin-top:1.5rem;">
+              <button class="btn-cancel" onclick="document.getElementById('editTeacherModal').remove()">Cancel</button>
+              <button class="btn-confirm" style="background:var(--teacher-accent);" onclick="saveTeacherProfile()">
+                <i class="fas fa-save"></i> Save Changes
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      };
+
+      // Save Profile
+      window.saveTeacherProfile = () => {
+        let t = Storage.load('westfield_teacher_profile', DATA.teacher);
+        
+        t.firstName = document.getElementById('tFirstName').value.trim();
+        t.lastName = document.getElementById('tLastName').value.trim();
+        t.email = document.getElementById('tEmail').value.trim();
+        t.phone = document.getElementById('tPhone').value.trim();
+        t.office = document.getElementById('tOffice').value.trim();
+        t.officeHours = document.getElementById('tOfficeHours').value.trim();
+        t.specialization = document.getElementById('tSpecialization').value.trim();
+        
+        // Initials update karo
+        t.initials = (t.firstName.charAt(0) + t.lastName.charAt(0)).toUpperCase();
+        
+        // LocalStorage mein save karo
+        Storage.save('westfield_teacher_profile', t);
+        
+        // Session update karo
+        setCurrentUser(t, 'teacher');
+        
+        document.getElementById('editTeacherModal').remove();
+        showToast('Profile updated successfully!', 'success');
+        
+        setTimeout(() => location.reload(), 500);
+      };
+
+      renderTeacherProfile();
+    });
   </script>
 </body>
 </html>

@@ -5,26 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Messages · Faculty Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    if (!requireAuth('teacher')) throw new Error();
-    const content = `
-      <div class="page-header"><h2><i class="fas fa-envelope"></i> Messages</h2><p>Communicate with students and colleagues.</p></div>
-      <div class="messages-layout">
-        <div class="messages-sidebar">
-          <div class="messages-sidebar-header"><h3>Inbox</h3></div>
-          <div id="messagesContactList"></div>
-        </div>
-        <div class="messages-content" id="messagesChat"></div>
-      </div>
-    `;
-    buildLayout('teacher-messages', content);
-    renderMessagesPage(true);
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
+
+      let activeContactIdx = 0;
+      let lastRenderHash = '';
+
+      function renderTeacherMessages() {
+        const allMessages = MessageStore.getMessages();
+        
+        if (!allMessages || allMessages.length === 0) {
+          buildLayout('teacher-messages', `
+            <div class="page-header"><h2><i class="fas fa-envelope"></i> Messages</h2></div>
+            <div style="text-align:center; padding:3rem; color:var(--text-light);">
+              <i class="fas fa-inbox" style="font-size:3rem; margin-bottom:1rem; display:block; color:#c8d4e3;"></i>
+              <h3>No messages found</h3>
+            </div>
+          `);
+          return;
+        }
+
+        const activeConv = allMessages[activeContactIdx] || allMessages[0];
+
+        const content = `
+          <div class="page-header">
+            <h2><i class="fas fa-envelope"></i> Messages</h2>
+            <p>Communicate with students and colleagues.</p>
+          </div>
+
+          <div class="messages-layout">
+            <div class="messages-sidebar">
+              <div class="messages-sidebar-header">
+                <h3>Inbox (${allMessages.reduce((s, m) => s + (m.unread || 0), 0)})</h3>
+              </div>
+              ${allMessages.map((m, i) => `
+                <div class="message-contact ${i === activeContactIdx ? 'active' : ''}" onclick="openTeacherChat(${i})">
+                  <div class="contact-avatar">${escapeHtml(m.initials || m.name.substring(0,2))}</div>
+                  <div class="contact-info">
+                    <h4>${escapeHtml(m.name)}</h4>
+                    <p>${m.messages && m.messages.length > 0 ? escapeHtml(m.messages[m.messages.length - 1].text) : 'No messages yet'}</p>
+                  </div>
+                  <div class="contact-meta">
+                    <div class="time">${m.messages && m.messages.length > 0 ? escapeHtml(m.messages[m.messages.length - 1].time) : ''}</div>
+                    ${m.unread > 0 ? `<div class="unread">${m.unread}</div>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="messages-content">
+              <div class="chat-header">
+                <div class="contact-avatar">${escapeHtml(activeConv.initials || activeConv.name.substring(0,2))}</div>
+                <div>
+                  <h4>${escapeHtml(activeConv.name)}</h4>
+                  <p>${escapeHtml(activeConv.role)}</p>
+                </div>
+              </div>
+              
+              <div class="chat-messages" id="chatMessages">
+                ${activeConv.messages && activeConv.messages.length > 0 ? activeConv.messages.map(m => `
+                  <div class="chat-bubble ${m.sender}">
+                    ${escapeHtml(m.text)}
+                    <span class="msg-time">${escapeHtml(m.time)}</span>
+                  </div>
+                `).join('') : '<p style="text-align:center; color:var(--text-light); padding:2rem;">No messages yet.</p>'}
+              </div>
+              
+              <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type a reply..." onkeydown="if(event.key==='Enter') sendTeacherMsg()">
+                <button onclick="sendTeacherMsg()"><i class="fas fa-paper-plane"></i> Send</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        buildLayout('teacher-messages', content);
+        
+        setTimeout(() => {
+          const chat = document.getElementById('chatMessages');
+          if (chat) chat.scrollTop = chat.scrollHeight;
+        }, 100);
+      }
+
+      window.openTeacherChat = (idx) => {
+        activeContactIdx = idx;
+        MessageStore.markRead(idx);
+        renderTeacherMessages();
+      };
+
+      window.sendTeacherMsg = () => {
+        const input = document.getElementById('messageInput');
+        if (!input) return;
+        const text = input.value.trim();
+        if (!text) return;
+
+        // 'received' means teacher sent it (so it appears as received on student's end)
+        MessageStore.addMessage(activeContactIdx, text, 'received');
+        input.value = '';
+        renderTeacherMessages();
+        showToast('Reply sent!', 'success');
+      };
+
+      renderTeacherMessages();
+
+      // Auto-refresh every 4 seconds
+      setInterval(() => {
+        const currentData = MessageStore.getMessages();
+        const currentHash = JSON.stringify(currentData);
+        
+        if (currentHash !== lastRenderHash) {
+          lastRenderHash = currentHash;
+          renderTeacherMessages();
+        }
+      }, 4000);
+    });
   </script>
 </body>
 </html>

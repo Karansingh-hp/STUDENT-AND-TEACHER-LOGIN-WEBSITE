@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Events · Faculty Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
+
+      // Events load karo
+      let events = Storage.load('westfield_shared_events', DATA.events);
+
+      const content = `
+        <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <h2><i class="fas fa-calendar-check"></i> Manage Events</h2>
+            <p>Add or remove campus events. Students will see this instantly.</p>
+          </div>
+          <button class="btn-primary" onclick="openAddEventModal()">
+            <i class="fas fa-plus"></i> Create Event
+          </button>
+        </div>
+
+        <div class="events-list">
+          ${events.length === 0 ? '<p style="text-align:center; padding:2rem;">No events created yet.</p>' : events.map((e, idx) => `
+            <div class="event-card">
+              <div class="event-date">
+                <div class="day">${escapeHtml(e.day)}</div>
+                <div class="month">${escapeHtml(e.month)}</div>
+              </div>
+              <div class="event-info">
+                <h4>${escapeHtml(e.title)}</h4>
+                <p>${escapeHtml(e.description)}</p>
+                <div class="event-meta">
+                  <span><i class="fas fa-clock"></i> ${escapeHtml(e.time)}</span>
+                  <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(e.location)}</span>
+                  <span><i class="fas fa-tag"></i> ${escapeHtml(e.category)}</span>
+                </div>
+              </div>
+              <div class="event-actions" style="margin-left: auto;">
+                <button class="btn-icon-action danger" onclick="deleteEvent(${idx})"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      buildLayout('teacher-events', content);
+
+      // Add Event Modal
+      window.openAddEventModal = () => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay show';
+        modal.id = 'eventModal';
+        modal.innerHTML = `
+          <div class="modal-box">
+            <h3><i class="fas fa-calendar-plus"></i> Create New Event</h3>
+            <div class="input-group" style="margin-top:1rem;">
+              <label>Event Title *</label>
+              <div class="input-field"><i class="fas fa-heading"></i><input type="text" id="evTitle" placeholder="e.g., Tech Hackathon"></div>
+            </div>
+            <div class="input-group">
+              <label>Description *</label>
+              <textarea id="evDesc" rows="3" style="width:100%;padding:0.8rem;border:1.5px solid var(--border);border-radius:12px;" placeholder="Details..."></textarea>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label>Day (e.g., 25)</label>
+                <div class="input-field"><input type="number" id="evDay" placeholder="25"></div>
+              </div>
+              <div class="input-group">
+                <label>Month (e.g., MAR)</label>
+                <div class="input-field"><input type="text" id="evMonth" placeholder="MAR"></div>
+              </div>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label>Time</label>
+                <div class="input-field"><input type="text" id="evTime" placeholder="10:00 AM"></div>
+              </div>
+              <div class="input-group">
+                <label>Location</label>
+                <div class="input-field"><input type="text" id="evLocation" placeholder="Auditorium"></div>
+              </div>
+            </div>
+            <div class="input-group">
+              <label>Category</label>
+              <div class="input-field">
+                <select id="evCategory">
+                  <option>Technology</option>
+                  <option>Cultural</option>
+                  <option>Academic</option>
+                  <option>Sports</option>
+                  <option>Career</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-actions" style="margin-top:1.5rem;">
+              <button class="btn-cancel" onclick="document.getElementById('eventModal').remove()">Cancel</button>
+              <button class="btn-confirm" style="background:var(--accent);" onclick="saveEvent()">Create Event</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        window.saveEvent = () => {
+          const title = document.getElementById('evTitle').value.trim();
+          const desc = document.getElementById('evDesc').value.trim();
+          const day = document.getElementById('evDay').value;
+          const month = document.getElementById('evMonth').value.trim().toUpperCase();
+          const time = document.getElementById('evTime').value.trim();
+          const location = document.getElementById('evLocation').value.trim();
+          const category = document.getElementById('evCategory').value;
+          
+          if (!title || !desc || !day || !month) { showToast('Please fill all required fields.', 'error'); return; }
+
+          const newEvent = { title, description: desc, day, month, time, location, category };
+          
+          events.unshift(newEvent);
+          Storage.save('westfield_shared_events', events);
+          
+          document.getElementById('eventModal').remove();
+          showToast('Event created successfully!', 'success');
+          setTimeout(() => location.reload(), 500);
+        };
+      };
+
+      // Delete Event
+      window.deleteEvent = (idx) => {
+        if (!confirm('Delete this event?')) return;
+        events.splice(idx, 1);
+        Storage.save('westfield_shared_events', events);
+        showToast('Event removed.', 'info');
+        setTimeout(() => location.reload(), 500);
+      };
+    });
+  </script>
+</body>
+</html>

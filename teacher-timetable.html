@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timetable · Faculty Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
+
+      // Timetable data load karo (agar save hai toh), warna default use karo
+      let timetableData = Storage.load('westfield_shared_timetable', DATA.timetable);
+
+      function renderTable() {
+        const content = `
+          <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2><i class="fas fa-calendar-alt"></i> Manage Timetable</h2>
+              <p>Update class schedules. Students will see this instantly.</p>
+            </div>
+            <button class="btn-primary" onclick="openAddClassModal()">
+              <i class="fas fa-plus"></i> Add Class Slot
+            </button>
+          </div>
+
+          <div class="timetable-wrapper">
+            <table class="timetable">
+              <thead>
+                <tr>
+                  <th style="width:120px;">Time</th>
+                  ${timetableData.days.map(d => `<th>${d}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${timetableData.slots.map((slot, slotIdx) => `
+                  <tr>
+                    <td class="time-col">${escapeHtml(slot.time)}</td>
+                    ${timetableData.days.map(day => {
+                      const dayKey = day.substring(0, 3).toLowerCase(); // Mon, Tue, Wed...
+                      const classInfo = slot[dayKey];
+                      return `
+                        <td>
+                          ${classInfo ? `
+                            <div class="class-block ${classInfo.type}" style="position:relative; cursor:pointer;" onclick="deleteSlot(${slotIdx}, '${dayKey}')">
+                              <strong>${escapeHtml(classInfo.course)}</strong>
+                              <span style="font-size:0.65rem;">Room ${escapeHtml(classInfo.room)}</span>
+                              <i class="fas fa-trash" style="position:absolute; top:4px; right:4px; font-size:0.6rem; color:#b91c1c; opacity:0.6;"></i>
+                            </div>
+                          ` : `
+                            <button class="btn-secondary" style="width:100%; height:100%; min-height:50px; font-size:0.7rem; border-style:dashed; background:transparent;" onclick="addClassToSlot(${slotIdx}, '${dayKey}')">
+                              + Add
+                            </button>
+                          `}
+                        </td>
+                      `;
+                    }).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <p style="text-align:center; font-size:0.8rem; color:var(--text-light); margin-top:1rem;">Click on a class block to delete it.</p>
+        `;
+        
+        buildLayout('teacher-timetable', content);
+      }
+
+      // Add Class Modal
+      window.openAddClassModal = () => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay show';
+        modal.id = 'classModal';
+        modal.innerHTML = `
+          <div class="modal-box">
+            <h3><i class="fas fa-plus-circle"></i> Add Class</h3>
+            <div class="input-group" style="margin-top:1rem;">
+              <label>Course Name</label>
+              <div class="input-field"><i class="fas fa-book"></i><input type="text" id="clsCourse" placeholder="e.g., CS 201"></div>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label>Room</label>
+                <div class="input-field"><i class="fas fa-door-open"></i><input type="text" id="clsRoom" placeholder="e.g., 402"></div>
+              </div>
+              <div class="input-group">
+                <label>Color Theme</label>
+                <div class="input-field"><i class="fas fa-palette"></i>
+                  <select id="clsType">
+                    <option value="cs">Blue (CS)</option>
+                    <option value="math">Green (Math)</option>
+                    <option value="phy">Purple (Phy)</option>
+                    <option value="eng">Orange (Eng)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="modal-actions" style="margin-top:1.5rem;">
+              <button class="btn-cancel" onclick="document.getElementById('classModal').remove()">Cancel</button>
+              <button class="btn-confirm" style="background:var(--accent);" onclick="saveNewClass()">Save</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Global function to save
+        window.saveNewClass = () => {
+          const course = document.getElementById('clsCourse').value.trim();
+          const room = document.getElementById('clsRoom').value.trim();
+          const type = document.getElementById('clsType').value;
+          if (!course || !room) { showToast('Fill all fields', 'error'); return; }
+
+          const newClass = { course, room, type };
+          
+          // Add to a new slot (default to first day, first slot for simplicity in this demo)
+          // In a real app, you'd pick the day and time.
+          // For now, let's just add it to Monday 9:00 AM
+          timetableData.slots[0].mon = newClass;
+          
+          saveTimetable();
+          document.getElementById('classModal').remove();
+          renderTable();
+          showToast('Class added!', 'success');
+        };
+      };
+
+      // Add to specific slot
+      window.addClassToSlot = (slotIdx, dayKey) => {
+        const course = prompt("Enter Course Name (e.g., CS 201):");
+        if (!course) return;
+        const room = prompt("Enter Room Number:");
+        if (!room) return;
+        
+        timetableData.slots[slotIdx][dayKey] = { course, room, type: 'cs' };
+        saveTimetable();
+        renderTable();
+        showToast('Class added!', 'success');
+      };
+
+      // Delete slot
+      window.deleteSlot = (slotIdx, dayKey) => {
+        if (!confirm('Delete this class?')) return;
+        timetableData.slots[slotIdx][dayKey] = null;
+        saveTimetable();
+        renderTable();
+        showToast('Class removed.', 'success');
+      };
+
+      function saveTimetable() {
+        Storage.save('westfield_shared_timetable', timetableData);
+      }
+
+      // Initial render
+      renderTable();
+    });
+  </script>
+</body>
+</html>

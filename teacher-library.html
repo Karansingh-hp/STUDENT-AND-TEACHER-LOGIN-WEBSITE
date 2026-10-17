@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Library · Faculty Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+  <div id="root"></div>
+  <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
+
+      // Data load karo
+      let books = Storage.load('westfield_shared_library', DATA.libraryBooks);
+
+      const content = `
+        <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <h2><i class="fas fa-bookmark"></i> Manage Library</h2>
+            <p>Add or remove books. Students will see updates instantly.</p>
+          </div>
+          <button class="btn-primary" onclick="openAddBookModal()">
+            <i class="fas fa-plus"></i> Add New Book
+          </button>
+        </div>
+
+        <div class="library-grid">
+          ${books.length === 0 ? '<p>No books in library. Add some!</p>' : books.map((b, idx) => `
+            <div class="book-card">
+              <div class="book-cover ${b.cover}"><i class="fas ${b.icon}"></i></div>
+              <div class="book-info">
+                <h4>${escapeHtml(b.title)}</h4>
+                <div class="author">${escapeHtml(b.author)}</div>
+                <div class="book-meta">
+                  <span><i class="fas fa-tag"></i> ${escapeHtml(b.category)}</span>
+                  <span><i class="fas fa-calendar"></i> ${b.year}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                  <span class="availability ${b.available ? 'available' : 'borrowed'}">${b.available ? `Available (${b.copies})` : 'Borrowed'}</span>
+                  <button class="btn-icon-action danger" onclick="deleteBook(${idx})"><i class="fas fa-trash"></i></button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      buildLayout('teacher-library', content);
+
+      // Add Book Logic
+      window.openAddBookModal = () => {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay show';
+        modal.id = 'bookModal';
+        modal.innerHTML = `
+          <div class="modal-box">
+            <h3><i class="fas fa-book"></i> Add New Book</h3>
+            <div class="input-group" style="margin-top:1rem;">
+              <label>Book Title *</label>
+              <div class="input-field"><i class="fas fa-heading"></i><input type="text" id="bookTitle" placeholder="e.g., Clean Code"></div>
+            </div>
+            <div class="input-group">
+              <label>Author *</label>
+              <div class="input-field"><i class="fas fa-user-pen"></i><input type="text" id="bookAuthor" placeholder="e.g., Robert Martin"></div>
+            </div>
+            <div class="input-row">
+              <div class="input-group">
+                <label>Category</label>
+                <div class="input-field"><i class="fas fa-tag"></i>
+                  <select id="bookCategory">
+                    <option>Computer Science</option>
+                    <option>Mathematics</option>
+                    <option>Physics</option>
+                    <option>Writing</option>
+                    <option>General</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-group">
+                <label>Total Copies</label>
+                <div class="input-field"><i class="fas fa-copy"></i><input type="number" id="bookCopies" value="3"></div>
+              </div>
+            </div>
+            <div class="modal-actions" style="margin-top:1.5rem;">
+              <button class="btn-cancel" onclick="document.getElementById('bookModal').remove()">Cancel</button>
+              <button class="btn-confirm" style="background:var(--accent);" onclick="saveBook()">Add to Library</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        window.saveBook = () => {
+          const title = document.getElementById('bookTitle').value.trim();
+          const author = document.getElementById('bookAuthor').value.trim();
+          const category = document.getElementById('bookCategory').value;
+          const copies = document.getElementById('bookCopies').value;
+          
+          if (!title || !author) { showToast('Please fill Title and Author.', 'error'); return; }
+
+          // Random cover and icon assign karo
+          const covers = ['c1','c2','c3','c4','c5','c6'];
+          const icons = ['fa-book','fa-code','fa-atom','fa-database','fa-chart-pie'];
+          
+          const newBook = {
+            title: title,
+            author: author,
+            category: category,
+            year: new Date().getFullYear(),
+            copies: `${copies}/${copies}`,
+            available: true,
+            cover: covers[Math.floor(Math.random()*covers.length)],
+            icon: icons[Math.floor(Math.random()*icons.length)]
+          };
+
+          books.push(newBook);
+          Storage.save('westfield_shared_library', books);
+          
+          document.getElementById('bookModal').remove();
+          showToast('Book added successfully!', 'success');
+          setTimeout(() => location.reload(), 500);
+        };
+      };
+
+      // Delete Book Logic
+      window.deleteBook = (idx) => {
+        if (!confirm('Remove this book from the library?')) return;
+        books.splice(idx, 1);
+        Storage.save('westfield_shared_library', books);
+        showToast('Book removed.', 'info');
+        setTimeout(() => location.reload(), 500);
+      };
+    });
+  </script>
+</body>
+</html>

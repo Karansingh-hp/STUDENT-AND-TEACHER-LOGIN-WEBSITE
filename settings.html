@@ -5,19 +5,200 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings · Westfield Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    // Both student and teacher can access settings
-    const session = getCurrentUser();
-    if (!session) { window.location.href = 'index.html'; }
-    else {
-      initSettingsPage();
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check auth (Student or Teacher dono access kar sakte hain)
+      const session = getCurrentUser();
+      if (!session) { window.location.href = 'index.html'; return; }
+
+      function renderSettingsPage() {
+        // 🔥 LocalStorage se settings load karo, agar nahi hai toh default data.js wala use karo
+        let settings = Storage.load('westfield_settings', DATA.settings);
+        
+        // Agar phir bhi undefined hai, toh fallback object bana lo
+        if (!settings) {
+          settings = {
+            notifications: { email: true, push: true, sms: false, announcements: true, assignments: true, grades: true, events: false },
+            privacy: { showProfile: true, showGrades: false, showEmail: true },
+            preferences: { darkMode: false, compactView: false, language: 'English' }
+          };
+        }
+
+        const content = `
+          <div class="page-header">
+            <h2><i class="fas fa-cog"></i> Settings</h2>
+            <p>Manage your account preferences and notification settings.</p>
+          </div>
+
+          <div class="settings-grid">
+            <!-- Notifications -->
+            <div class="settings-card">
+              <h3><i class="fas fa-bell"></i> Notification Preferences</h3>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Email Notifications</h4><p>Receive updates via email</p></div>
+                <div class="toggle-switch ${settings.notifications.email ? 'active' : ''}" onclick="toggleSetting(this, 'notifications', 'email')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Push Notifications</h4><p>Browser push alerts</p></div>
+                <div class="toggle-switch ${settings.notifications.push ? 'active' : ''}" onclick="toggleSetting(this, 'notifications', 'push')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>SMS Notifications</h4><p>Text message alerts</p></div>
+                <div class="toggle-switch ${settings.notifications.sms ? 'active' : ''}" onclick="toggleSetting(this, 'notifications', 'sms')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Announcements</h4><p>Campus-wide announcements</p></div>
+                <div class="toggle-switch ${settings.notifications.announcements ? 'active' : ''}" onclick="toggleSetting(this, 'notifications', 'announcements')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Assignment Reminders</h4><p>Deadline reminders</p></div>
+                <div class="toggle-switch ${settings.notifications.assignments ? 'active' : ''}" onclick="toggleSetting(this, 'notifications', 'assignments')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Grade Updates</h4><p>Notify when grades posted</p></div>
+                <div class="toggle-switch ${settings.notifications.grades ? 'active' : ''}" onclick="toggleSetting(this, 'notifications', 'grades')"></div>
+              </div>
+            </div>
+
+            <!-- Privacy -->
+            <div class="settings-card">
+              <h3><i class="fas fa-shield-alt"></i> Privacy Settings</h3>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Show Profile</h4><p>Visible to other students</p></div>
+                <div class="toggle-switch ${settings.privacy.showProfile ? 'active' : ''}" onclick="toggleSetting(this, 'privacy', 'showProfile')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Show Grades</h4><p>Public grade visibility</p></div>
+                <div class="toggle-switch ${settings.privacy.showGrades ? 'active' : ''}" onclick="toggleSetting(this, 'privacy', 'showGrades')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Show Email</h4><p>Display email on profile</p></div>
+                <div class="toggle-switch ${settings.privacy.showEmail ? 'active' : ''}" onclick="toggleSetting(this, 'privacy', 'showEmail')"></div>
+              </div>
+            </div>
+
+            <!-- Preferences -->
+            <div class="settings-card">
+              <h3><i class="fas fa-palette"></i> Preferences</h3>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Dark Mode</h4><p>Switch to dark theme</p></div>
+                <div class="toggle-switch ${settings.preferences.darkMode ? 'active' : ''}" onclick="toggleSetting(this, 'preferences', 'darkMode')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Compact View</h4><p>Denser information layout</p></div>
+                <div class="toggle-switch ${settings.preferences.compactView ? 'active' : ''}" onclick="toggleSetting(this, 'preferences', 'compactView')"></div>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Language</h4><p>${escapeHtml(settings.preferences.language)}</p></div>
+                <button class="btn-secondary" style="padding:0.4rem 0.8rem;font-size:0.75rem;" onclick="showToast('Language selection opened.', 'info')">Change</button>
+              </div>
+            </div>
+
+            <!-- Account -->
+            <div class="settings-card">
+              <h3><i class="fas fa-user-cog"></i> Account</h3>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Change Password</h4><p>Update your password</p></div>
+                <button class="btn-secondary" style="padding:0.4rem 0.8rem;font-size:0.75rem;" onclick="showToast('Password change form opened.', 'info')">Change</button>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Download Data</h4><p>Export your account data</p></div>
+                <button class="btn-secondary" style="padding:0.4rem 0.8rem;font-size:0.75rem;" onclick="showToast('Data export started.', 'info')">Export</button>
+              </div>
+              
+              <div class="setting-item">
+                <div class="setting-info"><h4>Delete Account</h4><p>Permanently delete account</p></div>
+                <button class="btn-secondary" style="padding:0.4rem 0.8rem;font-size:0.75rem;color:var(--danger);border-color:var(--danger);" onclick="showToast('Account deletion requires admin approval.', 'error')">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        buildLayout('settings', content);
+      }
+
+      // 🔥 TOGGLE FUNCTION (Yeh LocalStorage mein save karega)
+      window.toggleSetting = (el, category, key) => {
+        // UI toggle karo
+        el.classList.toggle('active');
+        const value = el.classList.contains('active');
+        
+        // LocalStorage se latest settings uthao
+        let settings = Storage.load('westfield_settings', DATA.settings);
+        if (!settings) settings = { notifications: {}, privacy: {}, preferences: {} };
+        if (!settings[category]) settings[category] = {};
+        
+        // Value update karo
+        settings[category][key] = value;
+        
+        // Wapas save karo
+        Storage.save('westfield_settings', settings);
+        
+        // Theme apply karo (agar dark mode ya compact view change hua hai)
+        applySettingsFromStorage();
+        
+        showToast(`${key} ${value ? 'enabled' : 'disabled'}.`, 'success');
+      };
+
+      // Theme apply function
+      function applySettingsFromStorage() {
+        const settings = Storage.load('westfield_settings', DATA.settings);
+        if (!settings || !settings.preferences) return;
+        
+        // Dark Mode
+        if (settings.preferences.darkMode) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+        
+        // Compact View
+        if (settings.preferences.compactView) {
+          document.body.classList.add('compact-view');
+        } else {
+          document.body.classList.remove('compact-view');
+        }
+      }
+
+      // Initial Render
+      renderSettingsPage();
+      applySettingsFromStorage();
+    });
   </script>
 </body>
 </html>

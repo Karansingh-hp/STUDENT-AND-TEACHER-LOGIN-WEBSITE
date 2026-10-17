@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Faculty Login · Westfield Institute</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div class="auth-page teacher-theme">
@@ -56,14 +60,27 @@
           </div>
           <button type="submit" class="auth-btn teacher-btn" id="teacherLoginBtn"><i class="fas fa-sign-in-alt"></i> Sign In as Faculty</button>
           <div class="demo-hint teacher-hint"><i class="fas fa-info-circle"></i> Demo: any ID + password works</div>
-          <div class="auth-footer">New faculty? <a onclick="showToast('Contact HR.', 'info')">Contact HR</a></div>
         </form>
       </div>
     </div>
   </div>
 
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
-  <script>initTeacherLoginPage();</script>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof initTeacherLoginPage === 'function') initTeacherLoginPage();
+    });
+  </script>
 </body>
 </html>

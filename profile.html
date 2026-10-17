@@ -5,45 +5,173 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile · Westfield Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    const session = requireAuth('student');
-    if (!session) throw new Error();
-    const s = session.user;
-    const content = `
-      <div class="page-header"><h2><i class="fas fa-user"></i> My Profile</h2><p>Manage your personal and academic information.</p></div>
-      <div class="profile-grid">
-        <div class="profile-card">
-          <div class="profile-avatar-large">${escapeHtml(s.initials)}</div>
-          <h2>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</h2>
-          <div class="profile-id">Student ID: ${escapeHtml(s.id)}</div>
-          <div class="profile-program">${escapeHtml(s.program)}</div>
-          <div class="profile-stats">
-            <div class="profile-stat"><div class="number">${escapeHtml(s.gpa)}</div><div class="label">GPA</div></div>
-            <div class="profile-stat"><div class="number">${escapeHtml(s.credits)}</div><div class="label">Courses</div></div>
-            <div class="profile-stat"><div class="number">${escapeHtml(s.attendance)}%</div><div class="label">Attendance</div></div>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('student')) return;
+
+      function renderProfilePage() {
+        // 🔥 LocalStorage se latest student data load karo
+        const savedStudent = Storage.load('westfield_student_profile', DATA.student);
+        const s = savedStudent;
+
+        const content = `
+          <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2><i class="fas fa-user"></i> My Profile</h2>
+              <p>Manage your personal and academic information.</p>
+            </div>
+            <button class="btn-primary" onclick="openEditProfileModal()">
+              <i class="fas fa-edit"></i> Edit Profile
+            </button>
           </div>
-        </div>
-        <div class="info-card">
-          <h3><i class="fas fa-id-card"></i> Personal Information</h3>
-          <div class="info-row"><div class="label">Full Name</div><div class="value">${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</div></div>
-          <div class="info-row"><div class="label">Student ID</div><div class="value">${escapeHtml(s.id)}</div></div>
-          <div class="info-row"><div class="label">Email</div><div class="value">${escapeHtml(s.email)}</div></div>
-          <div class="info-row"><div class="label">Phone</div><div class="value">${escapeHtml(s.phone)}</div></div>
-          <div class="info-row"><div class="label">Date of Birth</div><div class="value">${escapeHtml(s.dob)}</div></div>
-          <div class="info-row"><div class="label">Address</div><div class="value">${escapeHtml(s.address)}</div></div>
-          <div class="info-row"><div class="label">Program</div><div class="value">${escapeHtml(s.program)}</div></div>
-          <div class="info-row"><div class="label">Year</div><div class="value">${escapeHtml(s.year)}</div></div>
-          <div class="info-row"><div class="label">Advisor</div><div class="value">${escapeHtml(s.advisor)}</div></div>
-        </div>
-      </div>
-    `;
-    buildLayout('profile', content);
+
+          <div class="profile-grid">
+            <!-- Profile Card -->
+            <div class="profile-card">
+              <div class="profile-avatar-large">${escapeHtml(s.initials)}</div>
+              <h2>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</h2>
+              <div class="profile-id">Student ID: ${escapeHtml(s.id)}</div>
+              <div class="profile-program">${escapeHtml(s.program)}</div>
+              <div class="profile-stats">
+                <div class="profile-stat">
+                  <div class="number">${escapeHtml(s.gpa)}</div>
+                  <div class="label">GPA</div>
+                </div>
+                <div class="profile-stat">
+                  <div class="number">${escapeHtml(s.credits)}</div>
+                  <div class="label">Courses</div>
+                </div>
+                <div class="profile-stat">
+                  <div class="number">${escapeHtml(s.attendance)}%</div>
+                  <div class="label">Attendance</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="info-card">
+              <h3><i class="fas fa-id-card"></i> Personal Information</h3>
+              <div class="info-row"><div class="label">Full Name</div><div class="value">${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</div></div>
+              <div class="info-row"><div class="label">Student ID</div><div class="value">${escapeHtml(s.id)}</div></div>
+              <div class="info-row"><div class="label">Email</div><div class="value">${escapeHtml(s.email)}</div></div>
+              <div class="info-row"><div class="label">Phone</div><div class="value">${escapeHtml(s.phone)}</div></div>
+              <div class="info-row"><div class="label">Date of Birth</div><div class="value">${escapeHtml(s.dob)}</div></div>
+              <div class="info-row"><div class="label">Address</div><div class="value">${escapeHtml(s.address)}</div></div>
+              <div class="info-row"><div class="label">Program</div><div class="value">${escapeHtml(s.program)}</div></div>
+              <div class="info-row"><div class="label">Year</div><div class="value">${escapeHtml(s.year)}</div></div>
+              <div class="info-row"><div class="label">Advisor</div><div class="value">${escapeHtml(s.advisor)}</div></div>
+            </div>
+          </div>
+        `;
+
+        buildLayout('profile', content);
+      }
+
+      // Edit Modal
+      window.openEditProfileModal = () => {
+        const s = Storage.load('westfield_student_profile', DATA.student);
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay show';
+        modal.id = 'editProfileModal';
+        modal.innerHTML = `
+          <div class="modal-box" style="max-width:600px; max-height:90vh; overflow-y:auto;">
+            <h3><i class="fas fa-user-edit"></i> Edit Profile</h3>
+            
+            <div class="input-row" style="margin-top:1rem;">
+              <div class="input-group">
+                <label>First Name</label>
+                <div class="input-field"><i class="fas fa-user"></i><input type="text" id="editFirstName" value="${escapeHtml(s.firstName)}"></div>
+              </div>
+              <div class="input-group">
+                <label>Last Name</label>
+                <div class="input-field"><i class="fas fa-user"></i><input type="text" id="editLastName" value="${escapeHtml(s.lastName)}"></div>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Email</label>
+              <div class="input-field"><i class="fas fa-envelope"></i><input type="email" id="editEmail" value="${escapeHtml(s.email)}"></div>
+            </div>
+
+            <div class="input-row">
+              <div class="input-group">
+                <label>Phone</label>
+                <div class="input-field"><i class="fas fa-phone"></i><input type="tel" id="editPhone" value="${escapeHtml(s.phone)}"></div>
+              </div>
+              <div class="input-group">
+                <label>Date of Birth</label>
+                <div class="input-field"><i class="fas fa-birthday-cake"></i><input type="date" id="editDob" value="${escapeHtml(s.dob)}"></div>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Address</label>
+              <div class="input-field"><i class="fas fa-map-marker-alt"></i><input type="text" id="editAddress" value="${escapeHtml(s.address)}"></div>
+            </div>
+
+            <div class="modal-actions" style="margin-top:1.5rem;">
+              <button class="btn-cancel" onclick="document.getElementById('editProfileModal').remove()">Cancel</button>
+              <button class="btn-confirm" style="background:var(--accent);" onclick="saveStudentProfile()">
+                <i class="fas fa-save"></i> Save Changes
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+      };
+
+      // Save Profile
+      window.saveStudentProfile = () => {
+        let s = Storage.load('westfield_student_profile', DATA.student);
+        
+        s.firstName = document.getElementById('editFirstName').value.trim();
+        s.lastName = document.getElementById('editLastName').value.trim();
+        s.email = document.getElementById('editEmail').value.trim();
+        s.phone = document.getElementById('editPhone').value.trim();
+        s.dob = document.getElementById('editDob').value;
+        s.address = document.getElementById('editAddress').value.trim();
+        
+        // Initials update karo
+        s.initials = (s.firstName.charAt(0) + s.lastName.charAt(0)).toUpperCase();
+        
+        // LocalStorage mein save karo
+        Storage.save('westfield_student_profile', s);
+        
+        // Session update karo
+        setCurrentUser(s, 'student');
+        
+        document.getElementById('editProfileModal').remove();
+        showToast('Profile updated successfully!', 'success');
+        
+        // Refresh page
+        setTimeout(() => location.reload(), 500);
+      };
+
+      // Initial render
+      renderProfilePage();
+    });
   </script>
 </body>
 </html>

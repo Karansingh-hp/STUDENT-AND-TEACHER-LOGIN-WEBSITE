@@ -1,0 +1,51 @@
+/* ============================================================
+   VARIABLES.CSS - Base Reset & Theme Colors
+   ============================================================ */
+
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+  font-family: 'Segoe UI', Roboto, system-ui, sans-serif; 
+}
+
+:root {
+  /* Theme Colors */
+  --primary: #1a5b9c;
+  --primary-light: #123b62;
+  --accent: #1e5fa8;
+  --accent-light: #2a7de0;
+  --bg-light: #f0f4fa;
+  --bg-card: #ffffff;
+  --text-dark: #0d1f33;
+  --text-mid: #2c3e5c;
+  --text-light: #5e6f8d;
+  --border: #e6edf6;
+  --success: #0e7c4a;
+  --warning: #c77700;
+  --danger: #b91c1c;
+  
+  /* Sizes & Spacing */
+  --radius: 10px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 25px rgba(0, 20, 50, 0.15);
+  --sidebar-width: 220px;
+  
+  /* Teacher Theme */
+  --teacher-accent: #7c3aed;
+  --teacher-accent-light: #9b5cf6;
+}
+
+body { 
+  background: var(--bg-light); 
+  min-height: 100vh; 
+  color: var(--text-dark); 
+  font-size: 13px; 
+  line-height: 1.5;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-light); }
+::-webkit-scrollbar-thumb { background: #c8d4e3; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-light); }

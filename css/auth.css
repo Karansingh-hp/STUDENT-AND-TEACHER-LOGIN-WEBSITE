@@ -1,0 +1,79 @@
+/* ============================================================
+   AUTH.CSS - Login & Register Pages
+   ============================================================ */
+
+.auth-page { 
+  min-height: 100vh; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  padding: 1rem; 
+  background: linear-gradient(145deg, #f0f4fa 0%, #d9e2ef 100%); 
+}
+.auth-page.teacher-theme { background: linear-gradient(145deg, #f3f0fa 0%, #e0d9ef 100%); }
+
+.auth-container { 
+  background: #fff; 
+  max-width: 850px; 
+  width: 100%; 
+  border-radius: 1.5rem; 
+  box-shadow: var(--shadow-lg); 
+  display: flex; 
+  flex-wrap: wrap; 
+  overflow: hidden; 
+}
+
+.auth-brand { 
+  flex: 1 1 42%; 
+  background: linear-gradient(135deg, var(--primary), var(--primary-light)); 
+  padding: 2rem 1.5rem; 
+  color: white; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: flex-start; 
+  position: relative; 
+}
+.auth-brand.teacher-brand { background: linear-gradient(135deg, #4c1d95, var(--teacher-accent)); }
+
+.brand-logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; z-index: 2; }
+.brand-logo i { font-size: 1.8rem; color: #9bc9ff; }
+.brand-logo .brand-text { font-size: 1.3rem; font-weight: 600; line-height: 1.2; }
+.brand-logo .brand-text span { font-weight: 300; font-size: 0.9rem; display: block; color: #b8d6ff; }
+
+.brand-message { z-index: 2; margin-bottom: 1.5rem; }
+.brand-message h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; line-height: 1.3; }
+.brand-message p { font-size: 0.85rem; opacity: 0.9; line-height: 1.5; color: #d3e4ff; }
+
+.brand-features { z-index: 2; }
+.brand-feature { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; font-size: 0.8rem; color: #d9e9ff; }
+.brand-feature i { width: 16px; color: #7fb2ff; font-size: 0.85rem; }
+
+.auth-form-panel { 
+  flex: 1 1 58%; 
+  background: white; 
+  padding: 2rem; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+}
+
+.auth-header { margin-bottom: 1.2rem; }
+.auth-header h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 0.2rem; }
+.auth-header p { color: var(--text-light); font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem; }
+
+.role-tabs { display: flex; background: #f0f4fa; border-radius: 8px; padding: 0.25rem; margin-bottom: 1.2rem; gap: 0.25rem; }
+.role-tab { flex: 1; padding: 0.5rem; border: none; background: transparent; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 0.8rem; font-weight: 600; color: var(--text-light); display: flex; align-items: center; justify-content: center; gap: 0.4rem; text-decoration: none; transition: all 0.2s; }
+.role-tab.active { background: white; color: var(--primary); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.role-tab.teacher-active { background: white; color: var(--teacher-accent); }
+
+.auth-btn { width: 100%; background: var(--primary); color: white; font-size: 0.85rem; font-weight: 600; padding: 0.65rem; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.4rem; margin-bottom: 1rem; font-family: inherit; }
+.auth-btn:hover { background: var(--primary-light); }
+.auth-btn.teacher-btn { background: var(--teacher-accent); }
+.auth-btn.teacher-btn:hover { background: #6d28d9; }
+
+.auth-footer { text-align: center; color: #4f6583; font-size: 0.72rem; border-top: 1px solid var(--border); padding-top: 0.8rem; }
+.auth-footer a { color: var(--accent); font-weight: 700; text-decoration: none; cursor: pointer; }
+
+.demo-hint { background: #eef4fe; border-radius: 20px; padding: 0.35rem 0.7rem; margin-bottom: 0.8rem; font-size: 0.65rem; color: #20558b; display: flex; align-items: center; justify-content: center; gap: 0.3rem; border: 1px dashed #bbd2f0; }
+.demo-hint.teacher-hint { background: #f3e8ff; color: #6d28d9; border-color: #c4b5fd; }

@@ -5,22 +5,128 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Library · Westfield Portal</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    if (!requireAuth('student')) throw new Error();
-    const content = `
-      <div class="page-header"><h2><i class="fas fa-bookmark"></i> Digital Library</h2><p>Browse and borrow from our collection.</p></div>
-      <div class="search-bar"><i class="fas fa-search"></i><input type="text" placeholder="Search books..." oninput="searchBooks(this.value)"></div>
-      <div class="library-grid" id="libraryGrid">
-        ${DATA.libraryBooks.map(b => renderBookCard(b)).join('')}
-      </div>
-    `;
-    buildLayout('library', content);
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('student')) return;
+
+      // 🔥 LocalStorage se load karo, warna default use karo
+      let allBooks = Storage.load('westfield_shared_library', DATA.libraryBooks || []);
+      
+      function renderLibrary(filterCategory = 'all', searchQuery = '') {
+        const container = document.getElementById('libraryContainer');
+        
+        // Filter Logic
+        let filtered = allBooks;
+        if (filterCategory !== 'all') {
+          filtered = filtered.filter(b => b.category === filterCategory);
+        }
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          filtered = filtered.filter(b => 
+            b.title.toLowerCase().includes(q) || 
+            b.author.toLowerCase().includes(q)
+          );
+        }
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div style="text-align:center; padding:3rem; grid-column:1/-1;">
+              <i class="fas fa-book-open" style="font-size:3rem; color:#c8d4e3; margin-bottom:1rem; display:block;"></i>
+              <h3 style="color:var(--text-mid);">No books found</h3>
+              <p style="color:var(--text-light);">Try a different search or category.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filtered.map(b => `
+          <div class="book-card" onclick="showToast('Opening details for \\'${escapeHtml(b.title)}\\'...', 'info')">
+            <div class="book-cover ${b.cover || 'c1'}"><i class="fas ${b.icon || 'fa-book'}"></i></div>
+            <div class="book-info">
+              <h4>${escapeHtml(b.title)}</h4>
+              <div class="author">${escapeHtml(b.author)}</div>
+              <div class="book-meta">
+                <span><i class="fas fa-tag"></i> ${escapeHtml(b.category)}</span>
+                <span><i class="fas fa-calendar"></i> ${b.year}</span>
+              </div>
+              <span class="availability ${b.available ? 'available' : 'borrowed'}">
+                ${b.available ? `Available (${b.copies})` : 'Borrowed'}
+              </span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const content = `
+        <div class="page-header">
+          <h2><i class="fas fa-bookmark"></i> Digital Library</h2>
+          <p>Browse and borrow from our extensive collection of academic resources.</p>
+        </div>
+
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Search books by title or author..." oninput="handleSearch(this.value)">
+        </div>
+
+        <div class="tab-filters" style="margin-bottom: 1.5rem;">
+          <button class="tab-filter active" onclick="handleFilter('all', this)">All Books</button>
+          <button class="tab-filter" onclick="handleFilter('Computer Science', this)">Computer Science</button>
+          <button class="tab-filter" onclick="handleFilter('Mathematics', this)">Mathematics</button>
+          <button class="tab-filter" onclick="handleFilter('Physics', this)">Physics</button>
+          <button class="tab-filter" onclick="handleFilter('Writing', this)">Writing</button>
+        </div>
+
+        <div class="library-grid" id="libraryContainer">
+          <!-- Books will render here -->
+        </div>
+      `;
+      
+      buildLayout('library', content);
+      
+      // Initial Render
+      renderLibrary();
+
+      // Handle live search
+      window.handleSearch = (query) => {
+        const activeFilter = document.querySelector('.tab-filter.active').textContent.trim();
+        let cat = 'all';
+        if (activeFilter === 'Computer Science') cat = 'Computer Science';
+        else if (activeFilter === 'Mathematics') cat = 'Mathematics';
+        else if (activeFilter === 'Physics') cat = 'Physics';
+        else if (activeFilter === 'Writing') cat = 'Writing';
+        
+        renderLibrary(cat, query);
+      };
+
+      // Handle category filter
+      window.handleFilter = (category, btn) => {
+        document.querySelectorAll('.tab-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const searchQuery = document.getElementById('searchInput').value;
+        renderLibrary(category, searchQuery);
+      };
+    });
   </script>
 </body>
 </html>

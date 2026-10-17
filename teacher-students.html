@@ -4,35 +4,89 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Students · Faculty Portal</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
 </head>
 <body>
   <div id="root"></div>
   <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMessage">Success</span></div>
-  <script src="script.js"></script>
+
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/student-assignments.js"></script>
+  <script src="js/teacher-assignments.js"></script>
+  <script src="js/teacher-courses.js"></script>
+  <script src="js/app.js"></script>
+  
   <script>
-    if (!requireAuth('teacher')) throw new Error();
-    const t = DATA.teacher;
-    const myCourses = t.courses.map(id => getCourseById(id)).filter(Boolean);
-    const allStudents = []; const seen = new Set();
-    myCourses.forEach(c => c.students.forEach(s => { if (!seen.has(s.id)) { seen.add(s.id); allStudents.push({ ...s, course: c.code }); } }));
-    const content = `
-      <div class="page-header"><h2><i class="fas fa-users"></i> My Students</h2><p>All students enrolled in your courses (${allStudents.length} total).</p></div>
-      <div class="dashboard-card">
-        <div class="card-header"><h3><i class="fas fa-list"></i> Student Roster</h3></div>
-        <div class="student-list">
-          ${allStudents.map(s => `
-            <div class="student-row">
-              <div class="student-avatar">${escapeHtml(s.name.split(' ').map(n => n[0]).join('').slice(0,2))}</div>
-              <div class="student-info"><h5>${escapeHtml(s.name)}</h5><p>${escapeHtml(s.id)} · ${escapeHtml(s.course)} · Attendance: ${s.attendance}%</p></div>
-              <span class="student-grade ${s.grade.startsWith('A') ? 'a' : s.grade.startsWith('B') ? 'b' : s.grade.startsWith('C') ? 'c' : 'd'}">${escapeHtml(s.grade)}</span>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireAuth('teacher')) return;
+
+      function renderStudentsPage() {
+        // 🔥 LocalStorage se saare registered students load karo
+        // Default data.js wala student (Alex) bhi include karo agar list khali ho
+        let allStudents = Storage.load('westfield_all_students', []);
+        if (allStudents.length === 0) {
+          allStudents = [DATA.student]; // Fallback
+          Storage.save('westfield_all_students', allStudents);
+        }
+
+        const content = `
+          <div class="page-header">
+            <h2><i class="fas fa-users"></i> My Students</h2>
+            <p>All students registered in the portal (${allStudents.length} total).</p>
+          </div>
+
+          <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="studentSearch" placeholder="Search students by name or ID..." oninput="filterStudents(this.value)">
+          </div>
+
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3><i class="fas fa-list"></i> Student Roster</h3>
+              <button class="btn-secondary" style="padding:0.4rem 0.8rem;font-size:0.75rem;" onclick="showToast('Exporting roster...', 'info')">
+                <i class="fas fa-download"></i> Export CSV
+              </button>
             </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
-    buildLayout('teacher-students', content);
+            
+            <div class="student-list" id="studentListContainer">
+              ${allStudents.map(s => `
+                <div class="student-row" onclick="showToast('Viewing ${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}', 'info')">
+                  <div class="student-avatar">${escapeHtml(s.initials || (s.firstName[0] + s.lastName[0]))}</div>
+                  <div class="student-info">
+                    <h5>${escapeHtml(s.firstName)} ${escapeHtml(s.lastName)}</h5>
+                    <p>${escapeHtml(s.id)} · ${escapeHtml(s.program)} · ${escapeHtml(s.email)}</p>
+                  </div>
+                  <span class="student-grade a" style="background:var(--bg-light);color:var(--primary);">${escapeHtml(s.year)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+
+        buildLayout('teacher-students', content);
+      }
+
+      // Search filter logic
+      window.filterStudents = (query) => {
+        const q = query.toLowerCase();
+        const rows = document.querySelectorAll('#studentListContainer .student-row');
+        
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(q) ? 'flex' : 'none';
+        });
+      };
+
+      renderStudentsPage();
+    });
   </script>
 </body>
 </html>
