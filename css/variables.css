@@ -11,7 +11,7 @@
 
 :root {
   /* Theme Colors */
-  --primary: #0b2b4b;
+  --primary: #1c5894;
   --primary-light: #123b62;
   --accent: #1e5fa8;
   --accent-light: #2a7de0;
@@ -29,7 +29,7 @@
   --radius: 12px;
   --shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   --shadow-lg: 0 10px 25px rgba(0, 20, 50, 0.15);
-  --sidebar-width: 245px; /* 🔥 Sidebar ko thoda bada kiya */
+  --sidebar-width: 245px; 
   
   /* Teacher Theme */
   --teacher-accent: #7c3aed;
@@ -40,8 +40,10 @@ body {
   background: var(--bg-light); 
   min-height: 100vh; 
   color: var(--text-dark); 
-  font-size: 14.5px; /* 🔥 Base font ko 13px se 14.5px kiya */
+  font-size: 14.5px; 
   line-height: 1.5;
+  overflow-x: hidden; /* 🔥 PHONE MEIN ZOOM-OUT ROKNE KE LIYE */
+  width: 100%;
 }
 
 /* Custom Scrollbar */
