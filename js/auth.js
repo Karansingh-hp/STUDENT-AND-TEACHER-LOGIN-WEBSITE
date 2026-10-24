@@ -87,6 +87,7 @@ function initLoginPage() {
 }
 
 /* ===== TEACHER LOGIN ===== */
+/* ===== TEACHER LOGIN (Restricted) ===== */
 function initTeacherLoginPage() {
   const form = document.getElementById('teacherLoginForm');
   if (!form) return;
@@ -104,17 +105,31 @@ function initTeacherLoginPage() {
     e.preventDefault();
     const id = document.getElementById('teacherId').value.trim();
     const pw = document.getElementById('teacherPassword').value.trim();
+    
     if (!id || !pw) { showToast('Please fill in all fields.', 'error'); return; }
 
     const btn = document.getElementById('teacherLoginBtn');
+    const origText = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
     btn.disabled = true;
 
     setTimeout(() => {
-      const teacher = { ...DATA.teacher };
-      setCurrentUser(teacher, 'teacher');
-      showToast(`Welcome, Prof. ${teacher.lastName}!`, 'success');
-      setTimeout(() => window.location.href = 'teacher-dashboard.html', 500);
+      // 🔒 RESTRICTION: Sirf yeh ID aur Password allow hai
+      const ALLOWED_ID = 'rajesh';
+      const ALLOWED_PW = '123456';
+
+      if (id === ALLOWED_ID && pw === ALLOWED_PW) {
+        // ✅ Correct credentials
+        const teacher = { ...DATA.teacher };
+        setCurrentUser(teacher, 'teacher');
+        showToast(`Welcome, Prof. ${teacher.lastName}!`, 'success');
+        setTimeout(() => window.location.href = 'teacher-dashboard.html', 500);
+      } else {
+        // ❌ Wrong credentials
+        btn.innerHTML = origText;
+        btn.disabled = false;
+        showToast('❌ Access Denied! Invalid Faculty Credentials.', 'error');
+      }
     }, 800);
   });
 }
